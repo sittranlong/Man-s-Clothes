@@ -25,12 +25,11 @@ public class User extends BaseEntity implements UserDetails {
     private String password;
     @Column(unique = true)
     private String email;
-    private boolean isEnable;
+    private Boolean isEnable;
     private Integer status;
-    private Integer balance;
 
     @Lob
-    @Column(columnDefinition = "blob")
+    @Column(columnDefinition = "longblob")
     private byte[] avatar;
 
     @ManyToMany(targetEntity = Role.class, fetch = FetchType.EAGER)
@@ -43,15 +42,9 @@ public class User extends BaseEntity implements UserDetails {
     }
 
     @Override
-    public void preUpdate() {
-        this.nothingToDo();
-    }
-
-    @Override
     public void prePersist() {
         this.isEnable = Boolean.FALSE;
         this.status = UserConst.STATUS_ACTIVE;
-        this.balance = UserConst.MONEY_DEFAULT;
     }
 
     @Override

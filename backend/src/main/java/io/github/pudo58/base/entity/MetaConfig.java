@@ -7,6 +7,5 @@ import lombok.Setter;
 @Entity
 @Setter
 @Getter
-public class Role extends BaseEntity{
-    private String name;
+public class MetaConfig extends BaseEntity {
 }

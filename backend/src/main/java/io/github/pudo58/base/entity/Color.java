@@ -7,6 +7,7 @@ import lombok.Setter;
 @Entity
 @Setter
 @Getter
-public class Role extends BaseEntity{
+public class Color extends BaseEntity {
     private String name;
+    private String code; // hex code
 }

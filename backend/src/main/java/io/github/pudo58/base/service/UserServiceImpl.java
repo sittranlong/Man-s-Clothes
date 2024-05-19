@@ -82,7 +82,7 @@ public class UserServiceImpl extends AbstractService<User> implements UserServic
         if (user == null) {
             throw new UnauthorizedException("Bạn chưa đăng nhập");
         }
-        return new UserRecord(user.getId(), user.getUsername(), user.getEmail(), user.getRoleList().stream().map(Role::getName).collect(Collectors.toSet()), user.getStatus(), user.getBalance());
+        return new UserRecord(user.getId(), user.getUsername(), user.getEmail(), user.getRoleList().stream().map(Role::getName).collect(Collectors.toSet()), user.getStatus());
     }
 
     @Override
@@ -91,7 +91,6 @@ public class UserServiceImpl extends AbstractService<User> implements UserServic
         User user = User.getContext();
         Assert.notNull(user, "Bạn chưa đăng nhập");
         Assert.hasText(user.getEmail(), "Bạn chưa cập nhật email");
-        Assert.isTrue(!user.isEnable(), "Bạn đã xác thực email");
         List<EmailOtp> emailOtpList = this.emailOtpRepo.findByEmailOrderByCreateDateDesc(user.getEmail());
         if (!emailOtpList.isEmpty()) {
             // sau 1 phút mới gửi lại
@@ -119,14 +118,12 @@ public class UserServiceImpl extends AbstractService<User> implements UserServic
         User user = User.getContext();
         List<EmailOtp> emailOtpList = this.emailOtpRepo.findByEmailOrderByCreateDateDesc(user.getEmail());
         EmailOtp emailOtp = emailOtpList.get(0);
-        Assert.isTrue(!user.isEnable(), "Bạn đã xác thực email");
         Assert.isTrue(emailOtp.getOtp().equals(otp), "Mã OTP không chính xác");
         Assert.isTrue(!emailOtp.isVerified(), "Mã OTP đã được xác thực");
         Assert.isTrue(emailOtp.getExpiryDate().after(new Date()), "Mã OTP đã hết hạn");
 
         emailOtp.setVerified(Boolean.TRUE);
         this.emailOtpRepo.save(emailOtp);
-        user.setEnable(Boolean.TRUE);
         user.getRoleList().add(roleRepo.findByName(UserConst.ROLE_USER));
         this.repo.save(user);
         return new AlertResponseRecord("Xác thực email thành công", HttpStatus.OK.value());

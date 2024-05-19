@@ -20,10 +20,14 @@ public abstract class BaseEntity implements Serializable {
     private String createBy;
 
     @PreUpdate
-    public abstract void preUpdate();
+    public void preUpdate(){
+
+    }
 
     @PrePersist
-    public abstract void prePersist();
+    public  void prePersist(){
+
+    }
 
     protected void nothingToDo() {
     }

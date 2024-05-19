@@ -1,5 +1,7 @@
 package io.github.pudo58.base.entity;
 
+import io.github.pudo58.constant.OrderConst;
+import io.github.pudo58.util.Random;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToOne;
@@ -14,19 +16,23 @@ import lombok.Setter;
 public class Order extends BaseEntity {
     private String code;
     private Integer total;
-    private int quantity;
     private String status;
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
-    // danh sách sản phẩm trong đơn hàng
-    @Override
-    public void preUpdate() {
-
-    }
+    @ManyToOne
+    private Voucher voucher;
+    private String address;
+    private String phone;
+    private String note;
+    private Integer paymentMethod; // 1: COD, 2: QR code
+    private Integer discount; // giảm giá
+    private Integer shippingFee; // phí vận chuyển
+    private Integer finalTotal; // tổng tiền cuối cùng
 
     @Override
     public void prePersist() {
-
+        this.code = Random.randomString(8);
+        this.status = OrderConst.STATUS_PENDING;
     }
 }

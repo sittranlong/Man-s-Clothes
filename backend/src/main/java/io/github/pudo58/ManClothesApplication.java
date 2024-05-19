@@ -7,10 +7,10 @@ import org.springframework.context.annotation.PropertySources;
 
 @SpringBootApplication
 @PropertySources(
-        @PropertySource("classpath:order_proxy.properties")
+        @PropertySource("classpath:man_clothes.properties")
 )
-public class OrderProxyApplication {
+public class ManClothesApplication {
     public static void main(String[] args) {
-        SpringApplication.run(OrderProxyApplication.class, args);
+        SpringApplication.run(ManClothesApplication.class, args);
     }
 }
