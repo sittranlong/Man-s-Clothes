@@ -1,0 +1,25 @@
+.call-to-action .inner-content {
+    margin-top: 60px;
+    padding: 30px;
+    background-color: #f7f7f7;
+    border-radius: 5px;
+}
+
+.call-to-action .inner-content h4 {
+    font-size: 17px;
+    color: #1a6692;
+    margin-bottom: 15px;
+}
+
+.call-to-action .inner-content em {
+    font-style: normal;
+    font-weight: 700;
+}
+
+.call-to-action .inner-content .col-md-4 {
+    text-align: right;
+}
+
+.call-to-action .inner-content .filled-button {
+    margin-top: 12px;
+}

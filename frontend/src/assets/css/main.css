@@ -1,0 +1,39 @@
+.limit-line-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* Số dòng hiển thị */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.limit-line-1 {
+    display: -webkit-box;
+    -webkit-line-clamp: 1; /* Số dòng hiển thị */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+body {
+    font-family: 'Poppins', sans-serif;
+    overflow-x: hidden;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+p {
+    margin-bottom: 0px;
+    font-size: 14px;
+    font-weight: 300;
+    color: #4a4a4a;
+    line-height: 24px;
+}
+a {
+    text-decoration: none!important;
+}
+ul {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+h1,h2,h3,h4,h5,h6 {
+    margin: 0px;
+}
