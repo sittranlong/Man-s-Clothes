@@ -16,11 +16,13 @@ public abstract class AbstractService<T> implements io.github.pudo58.base.servic
     protected JpaRepository<T, UUID> repo;
 
     @Override
+    @Transactional(rollbackFor = IllegalArgumentException.class)
     public T save(T t) {
         return repo.save(t);
     }
 
     @Override
+    @Transactional(rollbackFor = IllegalArgumentException.class)
     public T update(UUID uuid, T t) {
         T old = repo.findById(uuid).orElse(null);
         if (old == null) {
@@ -30,11 +32,13 @@ public abstract class AbstractService<T> implements io.github.pudo58.base.servic
     }
 
     @Override
+    @Transactional(rollbackFor = IllegalArgumentException.class)
     public void delete(T t) {
         repo.delete(t);
     }
 
     @Override
+    @Transactional(rollbackFor = IllegalArgumentException.class)
     public void deleteById(UUID uuid) {
         repo.deleteById(uuid);
     }

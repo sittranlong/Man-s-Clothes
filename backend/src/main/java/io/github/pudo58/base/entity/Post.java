@@ -18,6 +18,7 @@ public class Post extends BaseEntity {
     @Column(columnDefinition = "LONGBLOB")
     private byte[] image;
     private Integer view;
+    @Column(name = "like_count")
     private Integer like;
     private Integer dislike;
 }
