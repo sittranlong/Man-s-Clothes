@@ -6,6 +6,7 @@ import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Setter
@@ -32,4 +33,12 @@ public class Product extends BaseEntity {
 
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<ProductDetail> productDetails = new ArrayList<>();
+
+    // request insert
+    @Transient
+    private UUID categoryId;
+    @Transient
+    private UUID brandId;
+    @Transient
+    private String imageBase64;
 }
