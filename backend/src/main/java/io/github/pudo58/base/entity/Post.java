@@ -19,6 +19,6 @@ public class Post extends BaseEntity {
     private byte[] image;
     private Integer view;
     @Column(name = "like_count")
-    private Integer like;
+    private Integer likeCount;
     private Integer dislike;
 }

@@ -10,7 +10,7 @@ import lombok.Setter;
 @Getter
 public class PostCommend extends BaseEntity {
     private String commend;
-    private Integer like;
+    private Integer likeCount;
     private Integer dislike;
     @ManyToOne
     private Post post;

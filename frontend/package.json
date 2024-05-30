@@ -7,9 +7,14 @@
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
     "build-only": "vite build",
     "build-production": "vite build --mode production",
-    "dev": "vite --mode development --port 3000",
+    "dev": "vite --mode development --port 3000 --open --host 0.0.0.0",
     "preview": "vite preview",
     "type-check": "vue-tsc --noEmit -p tsconfig.app.json --composite false"
+  },
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts"
+    }
   },
   "dependencies": {
     "@mdi/font": "^7.3.67",
@@ -21,9 +26,10 @@
     "vue": "^3.3.4",
     "vue-axios": "^3.5.2",
     "vue-router": "^4.2.5",
-    "vuex": "^4.1.0",
     "vue3-toast": "0.0.1",
-    "vue3-toastify": "^0.1.2"
+    "vue3-toastify": "^0.1.2",
+    "vuex": "^4.1.0",
+    "vuex-persistedstate": "^4.1.0"
   },
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.3.3",

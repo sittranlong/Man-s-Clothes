@@ -25,6 +25,8 @@ public class User extends BaseEntity implements UserDetails {
     private String password;
     @Column(unique = true)
     private String email;
+    private String phone;
+    private String address;
     private Boolean isEnable;
     private Integer status;
 
@@ -44,7 +46,7 @@ public class User extends BaseEntity implements UserDetails {
     @Override
     public void prePersist() {
         this.isEnable = Boolean.FALSE;
-        this.status = UserConst.STATUS_ACTIVE;
+        this.status = UserConst.STATUS_NON_EMAIL_VERIFIED;
     }
 
     @Override

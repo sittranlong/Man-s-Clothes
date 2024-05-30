@@ -1,5 +1,6 @@
 package io.github.pudo58.endpoint.v2;
 
+import io.github.pudo58.base.entity.EmailOtp;
 import io.github.pudo58.base.entity.Role;
 import io.github.pudo58.base.entity.User;
 import io.github.pudo58.base.service.JwtService;
@@ -58,6 +59,7 @@ public class AuthV2Controller {
                 throw new RuntimeException("Xác thực thất bại");
             }
         } catch (InternalAuthenticationServiceException | BadCredentialsException ex) {
+            ex.printStackTrace();
             throw new InternalAuthenticationServiceException("Thông tin đăng nhập không chính xác");
         }
     }
@@ -65,6 +67,11 @@ public class AuthV2Controller {
     @PostMapping("/register")
     public UserRegisterRecord register(@NonNull @RequestBody UserRegisterRequest model) throws NoSuchAlgorithmException {
         return userService.register(model);
+    }
+
+    @PostMapping("/verifyEmail")
+    public AlertResponseRecord verifyEmail(@RequestBody EmailOtp emailOtp) {
+        return userService.verifyEmail(emailOtp.getEmail(), emailOtp.getOtp());
     }
 
     @PostMapping("/logout")

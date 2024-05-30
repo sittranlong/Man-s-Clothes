@@ -1,6 +1,7 @@
 package io.github.pudo58.base.entity;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.ManyToOne;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,6 +15,8 @@ public class EmailOtp extends BaseEntity{
     private String otp;
     private boolean verified;
     private Date expiryDate;
+    @ManyToOne
+    private User user;
     @Override
     public void preUpdate() {
 

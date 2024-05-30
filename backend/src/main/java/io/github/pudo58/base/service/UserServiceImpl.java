@@ -13,35 +13,38 @@ import io.github.pudo58.dto.UserRegisterRequest;
 import io.github.pudo58.record.AlertResponseRecord;
 import io.github.pudo58.record.UserRecord;
 import io.github.pudo58.record.UserRegisterRecord;
+import io.github.pudo58.util.EmailSender;
 import io.github.pudo58.util.Random;
 import jakarta.mail.MessagingException;
 import lombok.AllArgsConstructor;
-import org.springframework.core.env.Environment;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
-import java.security.NoSuchAlgorithmException;
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class UserServiceImpl extends AbstractService<User> implements UserService {
     private final UserRepo repo;
     private final PasswordEncoder passwordEncoder;
     private final RoleRepo roleRepo;
     private final EmailOtpRepo emailOtpRepo;
-    private final Environment env;
-    private final JavaMailSender mailSender;
+    private final EmailSender emailSender;
+    @Value("${verify.email.expiryTime}")
+    private long expiryTime;
 
     @Override
     @Transactional(rollbackFor = RuntimeException.class, readOnly = true)
@@ -60,16 +63,47 @@ public class UserServiceImpl extends AbstractService<User> implements UserServic
 
     @Transactional(rollbackFor = RuntimeException.class)
     @Override
-    public UserRegisterRecord register(UserRegisterRequest model) throws NoSuchAlgorithmException {
+    public UserRegisterRecord register(UserRegisterRequest model) {
         User user = new User();
-        Assert.notNull(model.getUsername(), () -> "Username is required");
-        Assert.notNull(model.getPassword(), () -> "Password is required");
+        Assert.hasText(model.getUsername(), () -> "Tài khoản không được để trống");
+        Assert.hasText(model.getPassword(), () -> "Mật khẩu không được để trống");
+        Assert.hasText(model.getEmail(), () -> "Email không được để trống");
+        Assert.hasText(model.getConfirmPassword(), () -> "Xác nhận mật khẩu không được để trống");
+        Assert.isTrue(model.getPassword().equals(model.getConfirmPassword()), () -> "Mật khẩu không khớp");
+        user.setEmail(model.getEmail());
         user.setUsername(model.getUsername());
         user.setPassword(this.passwordEncoder.encode(model.getPassword()));
         this.addRole(user);
         this.repo.save(user);
-        return new UserRegisterRecord(HttpStatus.OK.value(), "Đăng ký thành công");
+        this.sendEmailOtp(user);
+        return new UserRegisterRecord(HttpStatus.OK.value(), "Đăng ký thành công, vui lòng kiểm tra email để xác thực tài khoản");
 
+    }
+
+    @Override
+    @Transactional(rollbackFor = IllegalArgumentException.class)
+    public AlertResponseRecord verifyEmail(String email, String otp) {
+        List<EmailOtp> emailOtpList = emailOtpRepo.findByEmailOrderByCreateDateDesc(email);
+        if (emailOtpList.isEmpty()) {
+            throw new IllegalArgumentException("Email không tồn tại");
+        }
+        EmailOtp emailOtp = emailOtpList.get(0);
+        if (emailOtp.isVerified()) {
+           throw new IllegalArgumentException("Email đã được xác thực");
+        }
+        if (emailOtp.getExpiryDate().before(new Date())) {
+            throw new IllegalArgumentException("Mã xác thực đã hết hạn");
+        }
+        if (!emailOtp.getOtp().equals(otp)) {
+            throw new IllegalArgumentException("Mã xác thực không chính xác");
+        }
+        User user = emailOtp.getUser();
+        user.setStatus(UserConst.STATUS_ACTIVE);
+        user.setIsEnable(Boolean.TRUE);
+        this.repo.save(user);
+        emailOtp.setVerified(true);
+        emailOtpRepo.save(emailOtp);
+        return new AlertResponseRecord("Xác thực email thành công", HttpStatus.OK.value());
     }
 
     @Override
@@ -85,55 +119,6 @@ public class UserServiceImpl extends AbstractService<User> implements UserServic
         return new UserRecord(user.getId(), user.getUsername(), user.getEmail(), user.getRoleList().stream().map(Role::getName).collect(Collectors.toSet()), user.getStatus());
     }
 
-    @Override
-    @Transactional(rollbackFor = RuntimeException.class)
-    public AlertResponseRecord sendOtp() {
-        User user = User.getContext();
-        Assert.notNull(user, "Bạn chưa đăng nhập");
-        Assert.hasText(user.getEmail(), "Bạn chưa cập nhật email");
-        List<EmailOtp> emailOtpList = this.emailOtpRepo.findByEmailOrderByCreateDateDesc(user.getEmail());
-        if (!emailOtpList.isEmpty()) {
-            // sau 1 phút mới gửi lại
-            if (emailOtpList.get(0).getCreateDate().after(new Date(System.currentTimeMillis() - 60000L))) {
-                throw new IllegalArgumentException("Bạn vui lòng đợi 1 phút để gửi lại mã OTP");
-            }
-            this.emailOtpRepo.deleteAll(emailOtpList);
-        }
-        EmailOtp emailOtp = new EmailOtp();
-        emailOtp.setEmail(user.getEmail());
-        emailOtp.setOtp(String.valueOf(Random.randomNumber(env.getProperty("verify.email.defaultLength", Integer.class, 6))));
-        Date expiryDate = new Date(System.currentTimeMillis() + env.getProperty("verify.email.expiryTime", Long.class, 300000L));
-        emailOtp.setCreateBy(user.getUsername());
-        emailOtp.setExpiryDate(expiryDate);
-        this.emailOtpRepo.save(emailOtp);
-        ExecutorService executorService = Executors.newSingleThreadExecutor();
-        executorService.execute(() -> this.sendMailOtp(emailOtp.getOtp(), emailOtp.getEmail()));
-        return new AlertResponseRecord("Mã OTP đã được gửi đến email của bạn", HttpStatus.OK.value());
-    }
-
-    @Override
-    @Transactional(rollbackFor = RuntimeException.class)
-    public AlertResponseRecord verifyOtp(String otp) {
-        Assert.hasText(otp, "Mã OTP không được để trống");
-        User user = User.getContext();
-        List<EmailOtp> emailOtpList = this.emailOtpRepo.findByEmailOrderByCreateDateDesc(user.getEmail());
-        EmailOtp emailOtp = emailOtpList.get(0);
-        Assert.isTrue(emailOtp.getOtp().equals(otp), "Mã OTP không chính xác");
-        Assert.isTrue(!emailOtp.isVerified(), "Mã OTP đã được xác thực");
-        Assert.isTrue(emailOtp.getExpiryDate().after(new Date()), "Mã OTP đã hết hạn");
-
-        emailOtp.setVerified(Boolean.TRUE);
-        this.emailOtpRepo.save(emailOtp);
-        user.getRoleList().add(roleRepo.findByName(UserConst.ROLE_USER));
-        this.repo.save(user);
-        return new AlertResponseRecord("Xác thực email thành công", HttpStatus.OK.value());
-    }
-
-    @Override
-    public AlertResponseRecord callbackFromPayOs(String code, String id, String cancel, String status, String orderCode) {
-        return null;
-    }
-
     private void addRole(User user) {
         try {
             Role role = roleRepo.findAll((root, query, builder) -> builder.equal(root.get("name"), UserConst.ROLE_GUEST)).stream().findFirst().orElse(null);
@@ -143,22 +128,24 @@ public class UserServiceImpl extends AbstractService<User> implements UserServic
         }
     }
 
-    private void sendMailOtp(String otp, String email) {
-        try {
-            String htmlContent = "<div style=\"background-color: #f2f2f2; padding: 20px;\">\n" +
-                    "    <div style=\"background-color: #fff; padding: 20px;\">\n" +
-                    "        <h1 style=\"text-align: center; color: #ff0000;\">Mã OTP của bạn là: " + otp + "</h1>\n" +
-                    "        <p style=\"text-align: center; color: #000000;\">Mã OTP này sẽ hết hạn trong vòng 5 phút</p>\n" +
-                    "    </div>\n" +
-                    "</div>";
-            MimeMessageHelper message = new MimeMessageHelper(this.mailSender.createMimeMessage(), "UTF-8");
-            message.setCc(email);
-            message.setSubject("Xác thực email");
-            message.setText(htmlContent, true);
-            mailSender.send(message.getMimeMessage());
-            mailSender.send(message.getMimeMessage());
-        } catch (MessagingException e) {
-            throw new RuntimeException(e);
-        }
+    private void sendEmailOtp(User user) {
+        String otp = String.valueOf(Random.randomNumber(100000, 999999));
+        EmailOtp emailOtp = new EmailOtp();
+        emailOtp.setOtp(otp);
+        emailOtp.setUser(user);
+        emailOtp.setEmail(user.getEmail());
+        emailOtp.setExpiryDate(new Date(System.currentTimeMillis() + expiryTime));
+        emailOtpRepo.save(emailOtp);
+        ExecutorService executorService =
+                new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS,
+                        new LinkedBlockingQueue<>());
+        executorService.submit(() -> {
+            try {
+                emailSender.sendOtp(emailOtp);
+            } catch (IOException | MessagingException e) {
+                throw new IllegalArgumentException(e);
+            }
+        });
+        executorService.shutdown();
     }
 }
