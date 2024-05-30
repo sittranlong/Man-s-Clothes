@@ -12,18 +12,9 @@ import org.springframework.web.bind.annotation.*;
 public class UserV2Controller {
     private final UserService userService;
 
-    @GetMapping("/get")
-    public UserRecord get() {
+    @GetMapping("/profile")
+    public UserRecord profile() {
         return this.userService.get();
     }
 
-    @PostMapping("/sendOtp")
-    public AlertResponseRecord sendOtp() {
-        return this.userService.sendOtp();
-    }
-
-    @PostMapping("/verifyOtp")
-    public AlertResponseRecord verifyOtp(@RequestParam String otp) {
-        return this.userService.verifyOtp(otp);
-    }
 }

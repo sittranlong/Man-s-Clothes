@@ -1,11 +1,12 @@
 import {createRouter, createWebHistory} from 'vue-router'
+import store from "@/plugins/store";
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
     routes: [
         {
             path: '/',
-            component: () => import('@/views/pages/home/HomePage.vue')
+            component: () => import('@/views/pages/home/HomePage.vue'),
         },
         {
             path: '/home',
@@ -34,8 +35,32 @@ const router = createRouter({
         {
             path: '/login',
             component: () => import('@/views/pages/login/LoginPage.vue'),
+        },
+        {
+            path: '/register',
+            component: () => import('@/views/pages/register/RegisterPage.vue'),
+        },
+        {
+            path: '/logout',
+            component: () => import('@/views/pages/logout/LogoutPage.vue'),
+            meta: {
+                requiredAuth: true
+            }
         }
     ]
 })
-
+router.beforeEach((to, from, next) => {
+    const isAuthenticated = store.getters.isAuthenticated;
+    const isAdmin = store.getters.isAdmin;
+    if (to.meta.requiresAuth && !isAuthenticated) {
+        next({
+            path: '/login',
+            query: {redirect: to.fullPath}
+        });
+    } else if (to.meta.isAdmin && !isAdmin) {
+        next('/home');
+    } else {
+        next();
+    }
+});
 export default router

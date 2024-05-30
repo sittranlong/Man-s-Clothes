@@ -15,7 +15,7 @@ import axios from 'axios'
 import VueAxios from 'vue-axios'
 import vuetify from '@/plugins/vuetify';
 import Vue3Toast, { toast } from 'vue3-toastify';
-import {ProductService} from "@/base/service/product.service";
+import store from "@/plugins/store";
 const options = {
     position: 'bottom-right',
     timeout: 3000,
@@ -31,11 +31,12 @@ const options = {
     rtl: false,
 };
 const app = createApp(App)
-axios.defaults.baseURL = 'http://localhost:3000/api';
+axios.defaults.baseURL = 'http://localhost:8022/api';
 app.use(router)
     .use(vuetify)
     .use(Vue3Toast, options)
-    .use(DependencyInjection)
+    .use(DependencyInjection, store)
+    .use(store)
     .use(VueAxios, axios)
     .mount('#app');
 app.config.globalProperties.$toast = toast;

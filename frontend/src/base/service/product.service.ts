@@ -2,6 +2,8 @@ import axios from "axios";
 import type {RouteParamValue} from "vue-router";
 export class ProductService {
     public url = 'https://fakestoreapi.com/products';
+    constructor(store : any) {
+    }
 
     public async getById(id: string | RouteParamValue[]) {
         const response = await axios.get(`${this.url}/${id}`);

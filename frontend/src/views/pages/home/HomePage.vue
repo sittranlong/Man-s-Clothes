@@ -24,12 +24,10 @@ export default defineComponent({
     },
     setup() {
         const productList = ref([] as ProductCard[]);
-
         const productService = inject('productService') as ProductService;
         productService.findAll().then(res => {
             productList.value = res;
         });
-        console.log(1,productService)
         const loadingComponent = <LoadingComponent loading={true}/>
 
         return () => (

@@ -14,12 +14,7 @@ public interface UserService extends Service<User> {
 
     UserRegisterRecord register(UserRegisterRequest model) throws NoSuchAlgorithmException;
 
+    AlertResponseRecord verifyEmail(String email, String otp);
+
     UserRecord get();
-
-    AlertResponseRecord sendOtp();
-
-    AlertResponseRecord verifyOtp(String otp);
-    // nạp tiền
-
-    AlertResponseRecord callbackFromPayOs(String code, String id, String cancel, String status, String orderCode);
 }
