@@ -21,6 +21,9 @@ public class EmailSender {
     private Resource emailOtpTemplate;
     @Value("classpath:static/email_template/email_reminder.html")
     private Resource emailReminderTemplate;
+
+    @Value("classpath:static/email_template/order_alert.html")
+    private Resource orderTemplate;
     private final long expiryTime;
     private final String frontEndUrl;
 
@@ -56,4 +59,6 @@ public class EmailSender {
         helper.setText(content, true);
         javaMailSender.send(helper.getMimeMessage());
     }
+
+
 }
