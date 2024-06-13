@@ -8,7 +8,6 @@ import io.github.pudo58.constant.OrderConst;
 import io.github.pudo58.constant.VoucherConst;
 import io.github.pudo58.dto.OrderRequest;
 import io.github.pudo58.record.AlertResponseRecord;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -144,6 +143,7 @@ public class OrderServiceImpl implements OrderService {
         }
         order.setStatus(OrderConst.STATUS_CANCELLED);
         orderRepo.save(order);
+        this.rollbackVoucher(order);
         return ResponseEntity.ok(new AlertResponseRecord("Hủy đơn hàng thành công", HttpStatus.OK.value()));
     }
 
@@ -166,4 +166,14 @@ public class OrderServiceImpl implements OrderService {
         orderRepo.save(order);
         return ResponseEntity.ok(new AlertResponseRecord("Xác nhận đơn hàng thành công", HttpStatus.OK.value()));
     }
+
+    private void rollbackVoucher(Order order) {
+        if (order == null) return;
+        if (order.getVoucher() != null) {
+            Voucher voucher = order.getVoucher();
+            voucher.setUsage(voucher.getUsage() - 1);
+            this.voucherRepo.save(voucher);
+        }
+    }
+
 }
