@@ -19,8 +19,7 @@ export default defineComponent({
 							<div class="row">
 								<div class="col-md-12">
 									<div class="inner-content">
-										<p>Copyright &copy; 2023 Template by :
-											<a href="https://github.com/pudo58" target={target.value}>La Van Tho Developer</a></p>
+										<p>Copyright &copy; 2024 Man Clothes</p>
 									</div>
 								</div>
 							</div>

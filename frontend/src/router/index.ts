@@ -46,18 +46,104 @@ const router = createRouter({
             meta: {
                 requiredAuth: true
             }
-        }
+        },
+        {
+            path: '/admin',
+            component: () => import('@/views/pages/admin/AdminPage.vue'),
+            meta: {
+                requiresAuth: true,
+                isAdmin: true
+            }
+        },
+        {
+            path: '/admin/user',
+            component: () => import('@/views/pages/admin/user/UserPage.vue'),
+            meta: {
+                requiresAuth: true,
+                isAdmin: true
+            }
+        },
+        {
+            path: '/admin/user/:id',
+            component: () => import('@/views/pages/admin/user/UserDetailPage.vue'),
+            meta: {
+                requiresAuth: true,
+                isAdmin: true
+            }
+        },
+        {
+            path: '/admin/category',
+            component: () => import('@/views/pages/admin/category/CategoryPage.vue'),
+            meta: {
+                requiresAuth: true,
+                isAdmin: true
+            }
+        },
+        {
+            path: '/admin/category/:id',
+            component: () => import('@/views/pages/admin/category/CategoryDetailPage.vue'),
+            meta: {
+                requiresAuth: true,
+                isAdmin: true
+            }
+        },
+        {
+            path: '/admin/tour',
+            component: () => import('@/views/pages/admin/tour/TourPage.vue'),
+            meta: {
+                requiresAuth: true,
+                isAdmin: true
+            }
+        },
+        {
+            path: '/admin/tour/:id',
+            component: () => import('@/views/pages/admin/tour/TourDetailPage.vue'),
+        },
+        {
+            path: '/admin/order',
+            component: () => import('@/views/pages/admin/order/OrderPage.vue'),
+        },
+        {
+            path: '/admin/order/:id',
+            component: () => import('@/views/pages/admin/order/OrderDetailPage.vue'),
+        },
+        {
+            path: '/admin/post',
+            component: () => import('@/views/pages/admin/post/PostPage.vue'),
+        },
+        {
+            path: '/admin/post/:id',
+            component: () => import('@/views/pages/admin/post/PostDetailPage.vue'),
+        },
+        {
+            path: '/admin/chart',
+            component: () => import('@/views/pages/admin/chart/ChartPage.vue'),
+        },
+        {
+            path: '/admin/voucher',
+            component: () => import('@/views/pages/admin/voucher/VoucherPage.vue'),
+        },
+
+        {
+            path: '/admin/voucher/:id',
+            component: () => import('@/views/pages/admin/voucher/VoucherDetailPage.vue'),
+        },
+        {
+            path: '/:pathMatch(.*)*',
+            component: () => import('@/components/NotFoundComponent.vue')
+        },
+
     ]
 })
 router.beforeEach((to, from, next) => {
     const isAuthenticated = store.getters.isAuthenticated;
     const isAdmin = store.getters.isAdmin;
-    if (to.meta.requiresAuth && !isAuthenticated) {
+    if (to.meta?.requiresAuth && !isAuthenticated) {
         next({
             path: '/login',
             query: {redirect: to.fullPath}
         });
-    } else if (to.meta.isAdmin && !isAdmin) {
+    } else if (to.meta?.isAdmin && !isAdmin) {
         next('/home');
     } else {
         next();

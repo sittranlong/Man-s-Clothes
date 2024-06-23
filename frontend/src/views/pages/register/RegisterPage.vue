@@ -4,6 +4,7 @@ import FooterComponent from "@/components/footer/FooterComponent.vue";
 import {AuthService} from "@/base/service/auth.service";
 import LoadingComponent from "@/components/loading/LoadingComponent.vue";
 import {toast} from "vue3-toastify";
+
 export default defineComponent({
     name: "RegisterPage",
     components: {LoadingComponent, FooterComponent},
@@ -19,7 +20,7 @@ export default defineComponent({
             confirmPassword: '',
             username: '',
         },
-        otpRequest : {
+        otpRequest: {
             email: '',
             otp: ''
         },
@@ -54,7 +55,7 @@ export default defineComponent({
                 this.formSubmit = false
             })
         }
-    }
+    },
 })
 </script>
 

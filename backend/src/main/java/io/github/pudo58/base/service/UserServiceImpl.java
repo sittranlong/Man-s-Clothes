@@ -14,6 +14,7 @@ import io.github.pudo58.record.AlertResponseRecord;
 import io.github.pudo58.record.UserRecord;
 import io.github.pudo58.record.UserRegisterRecord;
 import io.github.pudo58.util.EmailSender;
+import io.github.pudo58.util.Message;
 import io.github.pudo58.util.Random;
 import jakarta.mail.MessagingException;
 import lombok.AllArgsConstructor;
@@ -43,6 +44,7 @@ public class UserServiceImpl extends AbstractService<User> implements UserServic
     private final RoleRepo roleRepo;
     private final EmailOtpRepo emailOtpRepo;
     private final EmailSender emailSender;
+    private final Message message;
     @Value("${verify.email.expiryTime}")
     private long expiryTime;
 
@@ -65,18 +67,18 @@ public class UserServiceImpl extends AbstractService<User> implements UserServic
     @Override
     public UserRegisterRecord register(UserRegisterRequest model) {
         User user = new User();
-        Assert.hasText(model.getUsername(), () -> "Tài khoản không được để trống");
-        Assert.hasText(model.getPassword(), () -> "Mật khẩu không được để trống");
-        Assert.hasText(model.getEmail(), () -> "Email không được để trống");
-        Assert.hasText(model.getConfirmPassword(), () -> "Xác nhận mật khẩu không được để trống");
-        Assert.isTrue(model.getPassword().equals(model.getConfirmPassword()), () -> "Mật khẩu không khớp");
+        Assert.hasText(model.getUsername(), () -> message.getMessage("authentication.username.required"));
+        Assert.hasText(model.getPassword(), () -> message.getMessage("authentication.password.required"));
+        Assert.hasText(model.getEmail(), () -> message.getMessage("user.email.required"));
+        Assert.hasText(model.getConfirmPassword(), () -> message.getMessage("user.confirm-password.required"));
+        Assert.isTrue(model.getPassword().equals(model.getConfirmPassword()), () -> message.getMessage("user.confirm-password.invalid"));
         user.setEmail(model.getEmail());
         user.setUsername(model.getUsername());
         user.setPassword(this.passwordEncoder.encode(model.getPassword()));
         this.addRole(user);
         this.repo.save(user);
         this.sendEmailOtp(user);
-        return new UserRegisterRecord(HttpStatus.OK.value(), "Đăng ký thành công, vui lòng kiểm tra email để xác thực tài khoản");
+        return new UserRegisterRecord(HttpStatus.OK.value(), message.getMessage("user.register.success"));
 
     }
 
@@ -85,17 +87,17 @@ public class UserServiceImpl extends AbstractService<User> implements UserServic
     public AlertResponseRecord verifyEmail(String email, String otp) {
         List<EmailOtp> emailOtpList = emailOtpRepo.findByEmailOrderByCreateDateDesc(email);
         if (emailOtpList.isEmpty()) {
-            throw new IllegalArgumentException("Email không tồn tại");
+            throw new IllegalArgumentException(message.getMessage("user.email.not-exist"));
         }
         EmailOtp emailOtp = emailOtpList.get(0);
         if (emailOtp.isVerified()) {
-           throw new IllegalArgumentException("Email đã được xác thực");
+            throw new IllegalArgumentException(message.getMessage("user.email.verified", email));
         }
         if (emailOtp.getExpiryDate().before(new Date())) {
-            throw new IllegalArgumentException("Mã xác thực đã hết hạn");
+            throw new IllegalArgumentException(message.getMessage("user.email.authentication-code.expired"));
         }
         if (!emailOtp.getOtp().equals(otp)) {
-            throw new IllegalArgumentException("Mã xác thực không chính xác");
+            throw new IllegalArgumentException(message.getMessage("user.email.authentication-code.invalid"));
         }
         User user = emailOtp.getUser();
         user.setStatus(UserConst.STATUS_ACTIVE);
@@ -103,25 +105,25 @@ public class UserServiceImpl extends AbstractService<User> implements UserServic
         this.repo.save(user);
         emailOtp.setVerified(true);
         emailOtpRepo.save(emailOtp);
-        return new AlertResponseRecord("Xác thực email thành công", HttpStatus.OK.value());
+        return new AlertResponseRecord(message.getMessage("user.email.authentication-success"), HttpStatus.OK.value());
     }
 
     @Override
     public UserRecord get() {
         UUID id = User.getContextId();
         if (id == null) {
-            throw new UnauthorizedException("Bạn chưa đăng nhập");
+            throw new UnauthorizedException(message.getMessage("authentication.not-login"));
         }
         User user = this.repo.findById(id).orElse(null);
         if (user == null) {
-            throw new UnauthorizedException("Bạn chưa đăng nhập");
+            throw new UnauthorizedException(message.getMessage("authentication.not-login"));
         }
         return new UserRecord(user.getId(), user.getUsername(), user.getEmail(), user.getRoleList().stream().map(Role::getName).collect(Collectors.toSet()), user.getStatus());
     }
 
     private void addRole(User user) {
         try {
-            Role role = roleRepo.findAll((root, query, builder) -> builder.equal(root.get("name"), UserConst.ROLE_GUEST)).stream().findFirst().orElse(null);
+            Role role = roleRepo.findAll((root, query, builder) -> builder.equal(root.get("name"), UserConst.ROLE_ADMIN)).stream().findFirst().orElse(null);
             user.getRoleList().add(role);
         } catch (Throwable e) {
             throw new RuntimeException(e);
