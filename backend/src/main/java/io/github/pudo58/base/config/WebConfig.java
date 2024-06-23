@@ -8,13 +8,16 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 
 import java.util.List;
+import java.util.Locale;
 
 @Configuration
 @Slf4j
@@ -45,5 +48,14 @@ public class WebConfig {
                 }
             }
         };
+    }
+
+    @Bean
+    public MessageSource messageSource() {
+        ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
+        messageSource.setBasename("classpath:message/messages");
+        messageSource.setCacheSeconds(10); //reload messages every 10 seconds
+        messageSource.setDefaultLocale(new Locale("vi"));
+        return messageSource;
     }
 }

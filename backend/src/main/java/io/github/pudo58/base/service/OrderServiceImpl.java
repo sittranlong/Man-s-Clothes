@@ -8,6 +8,7 @@ import io.github.pudo58.constant.OrderConst;
 import io.github.pudo58.constant.VoucherConst;
 import io.github.pudo58.dto.OrderRequest;
 import io.github.pudo58.record.AlertResponseRecord;
+import io.github.pudo58.util.Message;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -32,6 +33,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRepo orderRepo;
     private final CartRepo cartRepo;
     private final VoucherRepo voucherRepo;
+    private final Message message;
 
     @Value("${vietqr.url}")
     private String vietQRURL;
@@ -43,10 +45,10 @@ public class OrderServiceImpl implements OrderService {
     @Transactional(rollbackFor = IllegalArgumentException.class)
     public ResponseEntity<?> createOrder(OrderRequest model) throws NoSuchAlgorithmException, IOException, InterruptedException, URISyntaxException {
         User user = User.getContext();
-        Assert.notNull(user, "Bạn cần đăng nhập để thực hiện chức năng này");
+        Assert.notNull(user, message.getMessage("authentication.required"));
         List<Cart> cartList = this.cartRepo.findByUserId(user.getId());
         if (cartList.isEmpty()) {
-            return ResponseEntity.badRequest().body(new AlertResponseRecord("Giỏ hàng của bạn đang trống", HttpStatus.BAD_REQUEST.value()));
+            return ResponseEntity.badRequest().body(new AlertResponseRecord(message.getMessage("cart.empty"), HttpStatus.BAD_REQUEST.value()));
         } else {
             List<OrderDetail> orderDetailList = OrderDetail.fromCartList(cartList);
             Order order = new Order();
@@ -62,18 +64,18 @@ public class OrderServiceImpl implements OrderService {
             Voucher voucher = voucherRepo.findByCode(model.getVoucherCode()).orElse(null);
             if (voucher != null) {
                 if (VoucherConst.STATUS_INACTIVE.equals(voucher.getStatus())) {
-                    return ResponseEntity.badRequest().body(new AlertResponseRecord("Voucher không hợp lệ", HttpStatus.BAD_REQUEST.value()));
+                    return ResponseEntity.badRequest().body(new AlertResponseRecord(message.getMessage("voucher.invalid"), HttpStatus.BAD_REQUEST.value()));
                 }
                 // check startDate, endDate
                 Date currentDate = new Date();
                 if (currentDate.before(voucher.getStartDate()) || currentDate.after(voucher.getEndDate())) {
-                    return ResponseEntity.badRequest().body(new AlertResponseRecord("Voucher không hợp lệ", HttpStatus.BAD_REQUEST.value()));
+                    return ResponseEntity.badRequest().body(new AlertResponseRecord(message.getMessage("voucher.invalid"), HttpStatus.BAD_REQUEST.value()));
                 }
                 if (voucher.getMaxUsage() != null && voucher.getUsage() >= voucher.getMaxUsage()) {
-                    return ResponseEntity.badRequest().body(new AlertResponseRecord("Voucher đã hết lượt sử dụng", HttpStatus.BAD_REQUEST.value()));
+                    return ResponseEntity.badRequest().body(new AlertResponseRecord(message.getMessage("voucher.expired"), HttpStatus.BAD_REQUEST.value()));
                 }
                 if (voucher.getMinTotal() != null && order.getFinalTotal() < voucher.getMinTotal()) {
-                    return ResponseEntity.badRequest().body(new AlertResponseRecord("Voucher không hợp lệ", HttpStatus.BAD_REQUEST.value()));
+                    return ResponseEntity.badRequest().body(new AlertResponseRecord(message.getMessage("voucher.invalid"), HttpStatus.BAD_REQUEST.value()));
                 }
                 order.setVoucher(voucher);
                 voucher.setUsage(voucher.getUsage() + 1);
@@ -108,7 +110,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public ResponseEntity<?> getQrCode(UUID orderId) throws NoSuchAlgorithmException, IOException, InterruptedException, URISyntaxException {
-        Assert.notNull(User.getContext(), "Bạn cần đăng nhập để thanh toán");
+        Assert.notNull(User.getContext(), message.getMessage("authentication.required"));
         Order order = orderRepo.getByIdAndStatusIn(orderId, List.of(OrderConst.STATUS_PENDING, OrderConst.STATUS_PROCESSING));
         if (order == null) {
             return ResponseEntity.notFound().build();
@@ -144,7 +146,7 @@ public class OrderServiceImpl implements OrderService {
         order.setStatus(OrderConst.STATUS_CANCELLED);
         orderRepo.save(order);
         this.rollbackVoucher(order);
-        return ResponseEntity.ok(new AlertResponseRecord("Hủy đơn hàng thành công", HttpStatus.OK.value()));
+        return ResponseEntity.ok(new AlertResponseRecord(message.getMessage("order.cancel-success"), HttpStatus.OK.value()));
     }
 
     @Override
@@ -164,7 +166,7 @@ public class OrderServiceImpl implements OrderService {
         }
         order.setStatus(OrderConst.STATUS_PROCESSING);
         orderRepo.save(order);
-        return ResponseEntity.ok(new AlertResponseRecord("Xác nhận đơn hàng thành công", HttpStatus.OK.value()));
+        return ResponseEntity.ok(new AlertResponseRecord(message.getMessage("order.approve-success"), HttpStatus.OK.value()));
     }
 
     private void rollbackVoucher(Order order) {
