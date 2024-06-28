@@ -1,9 +1,9 @@
 package io.github.pudo58.endpoint;
 
 import io.github.pudo58.base.controller.AbstractController;
-import io.github.pudo58.base.entity.Product;
-import io.github.pudo58.base.service.ProductService;
-import io.github.pudo58.dto.ProductSearchRequest;
+import io.github.pudo58.base.entity.Brand;
+import io.github.pudo58.base.service.BrandService;
+import io.github.pudo58.dto.CategoryRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,13 +12,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/product")
+@RequestMapping("/brand")
 @RequiredArgsConstructor
-public class ProductController extends AbstractController<Product> {
-    private final ProductService productService;
+public class BrandController extends AbstractController<Brand> {
+    private final BrandService brandService;
 
     @PostMapping("/findBySearch")
-    public Page<Product> findBySearch(@RequestBody ProductSearchRequest model) {
-        return productService.findBySearch(model);
+    public Page<Brand> findBySearch(@RequestBody CategoryRequest model) {
+        return brandService.findBySearch(model);
     }
+
 }

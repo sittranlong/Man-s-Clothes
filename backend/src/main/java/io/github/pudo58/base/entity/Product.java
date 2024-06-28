@@ -1,5 +1,6 @@
 package io.github.pudo58.base.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,6 +24,7 @@ public class Product extends BaseEntity {
     private byte[] image;
     private String status;
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, targetEntity = Category.class)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Category category;
 
     @ManyToOne(cascade = CascadeType.ALL, targetEntity = Brand.class)

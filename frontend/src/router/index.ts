@@ -88,16 +88,36 @@ const router = createRouter({
             }
         },
         {
-            path: '/admin/tour',
-            component: () => import('@/views/pages/admin/tour/TourPage.vue'),
+            path: '/admin/brand',
+            component: () => import('@/views/pages/admin/brand/BrandPage.vue'),
             meta: {
                 requiresAuth: true,
                 isAdmin: true
             }
         },
         {
-            path: '/admin/tour/:id',
-            component: () => import('@/views/pages/admin/tour/TourDetailPage.vue'),
+            path: '/admin/brand/:id',
+            component: () => import('@/views/pages/admin/brand/BrandDetailPage.vue'),
+            meta: {
+                requiresAuth: true,
+                isAdmin: true
+            }
+        },
+        {
+            path: '/admin/product',
+            component: () => import('@/views/pages/admin/product/ProductPage.vue'),
+            meta: {
+                requiresAuth: true,
+                isAdmin: true
+            }
+        },
+        {
+            path: '/admin/product/:id',
+            component: () => import('@/views/pages/admin/product/ProductDetailPage.vue'),
+            meta: {
+                requiresAuth: true,
+                isAdmin: true
+            }
         },
         {
             path: '/admin/order',
