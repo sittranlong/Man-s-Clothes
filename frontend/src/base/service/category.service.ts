@@ -65,7 +65,7 @@ export class CategoryService {
 
     // for client
 
-    async findAllCategoryClient() {
+    async findAllCategory() {
         const response = await axios.get(`${this.url}/findAll`);
         return response.data;
     }

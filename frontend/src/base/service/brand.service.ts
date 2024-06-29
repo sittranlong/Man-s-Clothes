@@ -18,6 +18,11 @@ export class BrandService {
         return response.data;
     }
 
+    async findAllBrand() {
+        const response = await axios.get(`${this.url}/findAll`);
+        return response.data;
+    }
+
     async save(model: any) {
         const response = await axios.post(`${this.adminUrl}/save`, model, {
             headers: {
@@ -60,13 +65,6 @@ export class BrandService {
                 Authorization: `${this.store?.getters.getToken}`
             }
         });
-        return response.data;
-    }
-
-    // for client
-
-    async findAllCategoryClient() {
-        const response = await axios.get(`${this.url}/findAll`);
         return response.data;
     }
 }

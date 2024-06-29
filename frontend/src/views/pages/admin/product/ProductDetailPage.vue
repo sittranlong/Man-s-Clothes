@@ -1,8 +1,8 @@
 <script lang="ts">
-import {defineComponent} from "vue";
+import {defineAsyncComponent, defineComponent} from "vue";
 import AdminPage from "@/views/pages/admin/AdminPage.vue";
-import ProductDetailComponent from "@/components/admin/product/ProductDetailComponent.vue"
 
+const ProductDetailComponent = defineAsyncComponent(() => import('@/components/admin/product/ProductDetailComponent.vue'));
 export default defineComponent({
     name: 'ProductDetailPage',
     components: {ProductDetailComponent, AdminPage}

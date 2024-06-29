@@ -35,4 +35,9 @@ public class WishlistV2Controller {
         wishListService.removeMultiple(ids);
     }
 
+    @GetMapping("/countAll")
+    public int countAll() {
+        return wishListService.countAll();
+    }
+
 }

@@ -3,7 +3,7 @@ package io.github.pudo58.base.service;
 import io.github.pudo58.base.entity.Category;
 import io.github.pudo58.base.repo.CategoryRepo;
 import io.github.pudo58.base.service.core.AbstractService;
-import io.github.pudo58.dto.CategoryRequest;
+import io.github.pudo58.dto.CommonRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 public class CategoryServiceImpl extends AbstractService<Category> implements CategoryService {
     private final CategoryRepo categoryRepo;
     @Override
-    public Page<Category> findBySearch(CategoryRequest model) {
-        return categoryRepo.findBySearch(model, PageRequest.of(model.getPage(), model.getSize()));
+    public Page<Category> findBySearch(CommonRequest model) {
+        return categoryRepo.findBySearch(model, model.getPageable());
     }
 }

@@ -2,6 +2,7 @@ package io.github.pudo58.base.config;
 
 import io.github.pudo58.base.config.filter.JwtAuthFilter;
 import io.github.pudo58.base.repo.UserRepo;
+import io.github.pudo58.constant.UserConst;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -49,7 +50,7 @@ public class SecurityConfig {
             .cors(Customizer.withDefaults())
             .authorizeHttpRequests(auth -> {
                 auth.requestMatchers("/v2/**").permitAll();
-                auth.anyRequest().authenticated();
+                auth.anyRequest().hasAuthority(UserConst.ROLE_ADMIN);
             })
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authenticationProvider(authenticationProvider())

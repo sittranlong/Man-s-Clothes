@@ -54,7 +54,7 @@
                                     Tài khoản
                                 </a>
                                 <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                    <router-link v-for="(item,index) in items"  :key="index" :to="item.uri" class="dropdown-item">{{item.title}}</router-link>
+                                    <router-link v-for="(item,index) in items" :key="index" :to="item.uri" class="dropdown-item">{{item.title}}</router-link>
                                 </div>
                             </li>
                         </ul>
@@ -66,9 +66,10 @@
 </template>
 
 <script lang="ts">
-import {computed, defineComponent, onBeforeUnmount, onMounted, ref, watch} from "vue";
-import {useStore} from "vuex";
-import {useRoute} from "vue-router";
+import {defineComponent, inject, ref} from "vue";
+import { useStore } from "vuex";
+import { useRoute } from "vue-router";
+import { WishlistService } from "@/base/service/wishlist.service";
 
 export default defineComponent({
     name: "HeaderComponent",
@@ -78,32 +79,35 @@ export default defineComponent({
             default: true,
         },
     },
-    setup(props) {
-        const store = useStore();
-        const route = useRoute();
-        const isShow = ref(props.showHeader);
-        const productUri = ['/product', '/products', '/product/:id'];
-        const aboutUri = ['/about'];
-        const contactUri = ['/contact'];
-        const cartUri = ['/cart'];
-        const menu = ref(false);
-        const items = [
-            {title: 'Tài khoản', uri: '/profile'},
-            {title: 'Đơn hàng', uri: '/order'},
-            {title: 'Đăng xuất', uri: '/logout'},
-        ];
-
-        const isAuthenticated = computed(() => store.getters.isAuthenticated);
-        const isAdmin = computed(() => store.getters.isAdmin);
-        if (isAdmin.value) {
-            items.push({title: 'Quản lý', uri: '/admin'});
-        }
-        const activeMenu = (uri: string[]) => {
-            let currentUri = route.path;
-            return uri.includes(currentUri);
+    setup() {
+        return {
+            route: useRoute(),
+            wishListService: inject('wishlistService') as WishlistService,
         };
-
-        const scrollHandler = () => {
+    },
+    data() {
+        return {
+            isShow: this.showHeader,
+            productUri: ['/product', '/products', '/product/:id'],
+            aboutUri: ['/about'],
+            contactUri: ['/contact'],
+            cartUri: ['/cart'],
+            menu: false,
+            items: [
+                { title: 'Tài khoản', uri: '/profile' ,order : 1},
+                { title: 'Đơn hàng', uri: '/order', order : 2 },
+                { title: 'Đăng xuất', uri: '/logout', order : 4 },
+            ],
+            isAuthenticated: false,
+            isAdmin: false,
+        };
+    },
+    methods: {
+        activeMenu(uri: string[]) {
+            const currentUri = this.route.path;
+            return uri.includes(currentUri);
+        },
+        scrollHandler() {
             let scroll = window.scrollY || document.documentElement.scrollTop;
             let header = document.querySelector('header')?.offsetHeight || 0;
 
@@ -112,40 +116,35 @@ export default defineComponent({
             } else {
                 document.querySelector('header')?.classList.remove('background-header');
             }
-        };
+        },
+        countWishlist() {
+            this.wishListService.countAll().then((response) => {
+                this.items.push({ title: 'Yêu thích (' + response + ')', uri: '/wishlist' , order : 3});
+            });
+            // sort menu
 
-        onMounted(() => {
-            window.addEventListener('scroll', scrollHandler);
-        });
+        },
+    },
+    created() {
+        const store = useStore();
+        this.isAuthenticated = store.getters.isAuthenticated;
+        this.isAdmin = store.getters.isAdmin;
 
-        onBeforeUnmount(() => {
-            window.removeEventListener('scroll', scrollHandler);
-        });
+        if (this.isAdmin) {
+            this.items.push({ title: 'Quản lý', uri: '/admin' , order : 5});
+        }
 
-        watch(isShow, (value) => {
-            console.log('isShow changed:', value);
-            if (value) {
-                window.addEventListener('scroll', scrollHandler);
-            } else {
-                window.removeEventListener('scroll', scrollHandler);
-            }
-        });
-
-        return {
-            isShow,
-            isAuthenticated,
-            activeMenu,
-            productUri,
-            aboutUri,
-            contactUri,
-            cartUri,
-            menu,
-            items,
-        };
+        window.addEventListener('scroll', this.scrollHandler);
+        this.countWishlist();
+        this.items.sort((a, b) => a.order - b.order);
+    },
+    beforeUnmount() {
+        window.removeEventListener('scroll', this.scrollHandler);
     },
 });
 </script>
 
 <style scoped>
 @import "style.css";
+/* CSS scoped để áp dụng cho component */
 </style>

@@ -14,4 +14,6 @@ public interface WishListService {
     List<Wishlist> findAll();
 
     void removeMultiple(List<UUID> productIds);
+
+    int countAll();
 }

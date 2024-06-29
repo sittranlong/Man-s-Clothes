@@ -3,7 +3,7 @@ package io.github.pudo58.endpoint;
 import io.github.pudo58.base.controller.AbstractController;
 import io.github.pudo58.base.entity.Category;
 import io.github.pudo58.base.service.CategoryService;
-import io.github.pudo58.dto.CategoryRequest;
+import io.github.pudo58.dto.CommonRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,7 +18,7 @@ public class CategoryController extends AbstractController<Category> {
     private final CategoryService categoryService;
 
     @PostMapping("/findBySearch")
-    public Page<Category> findBySearch(@RequestBody CategoryRequest model){
+    public Page<Category> findBySearch(@RequestBody CommonRequest model){
         return categoryService.findBySearch(model);
     }
 

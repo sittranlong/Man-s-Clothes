@@ -107,7 +107,7 @@ export default defineComponent({
                 <td>
                     <ul>
                         <li>{{ formatNumber(item.price) }}</li>
-                        <li> <strike>{{ calcPriceMarket(item) }}</strike></li>
+                        <li v-if="item?.discountPercent > 0"> <strike>{{ calcPriceMarket(item) }}</strike></li>
                     </ul>
                 </td>
             </template>
