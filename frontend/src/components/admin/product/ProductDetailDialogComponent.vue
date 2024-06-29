@@ -1,87 +1,148 @@
 <script lang="ts">
-import {defineComponent} from "vue";
-import {Product, ProductDetail} from "@/base/model/product.model";
+import {defineComponent, inject} from "vue";
+import {Color, Product, ProductDetail, Size} from "@/base/model/product.model";
+import {SizeService} from "@/base/service/size.service";
+import {ColorService} from "@/base/service/color.service";
+import {ProductService} from "@/base/service/product.service";
+import {toast} from "vue3-toastify";
 
 export default defineComponent({
     name: 'ProductDetailDialogComponent',
     props: {
-        product: Product,
+        product: {
+            type: Object as () => Product,
+            required: true
+        },
+    },
+    setup() {
+        return {
+            sizeService: inject('sizeService') as SizeService,
+            colorService: inject('colorService') as ColorService,
+            productService: inject('productService') as ProductService,
+        }
     },
     data() {
         return {
-            dialog: false,
-            productDetails : [] as ProductDetail[],
-            totalDetail: 0,
+            showDialog: false,
+            productDetails: [] as ProductDetail[],
+            sizeList: [] as Size[],
+            colorList: [] as Color[],
+            files: [] as File[]
         }
     },
-    /*
-    export class ProductDetail {
-    id?: number;
-    size?: Size;
-    color?: Color;
-    product?: Product;
-    quantity?: number;
-    image?: string;
-    sizeId?: number;
-    colorId?: number;
-    imageBase64?: string;
-}
-     */
+    methods: {
+        closeDialog() {
+            this.showDialog = false;
+        },
+        async loadSizeList() {
+            this.sizeList = await this.sizeService.findAll();
+        },
+        async loadColorList() {
+            this.colorList = await this.colorService.findAll();
+        },
+        addDetail() {
+            this.productDetails.push(new ProductDetail());
+        },
+        initializeProductDetail() {
+            if (this.product?.id) {
+                this.productDetails = this.product?.productDetails || [];
+            } else {
+                this.productDetails = [new ProductDetail()];
+            }
+        },
+        async uploadFile(index: number) {
+            if (this.files.length > 0) {
+                const reader = new FileReader();
+                const readFilePromise = new Promise((resolve, reject) => {
+                    reader.onload = () => {
+                        resolve(reader.result);
+                    };
+                    reader.onerror = (error) => {
+                        reject(error);
+                    };
+                });
+                reader.readAsDataURL(this.files[0]);
+                try {
+                    const avatarData = await readFilePromise;
+                    this.productDetails[index].imageBase64 = avatarData as string;
+                } catch (error) {
+                    toast.error('Error reading file');
+                } finally {
+                    this.files = [];
+                }
+            }
+        }
+    },
+    created() {
+        this.loadSizeList();
+        this.loadColorList();
+        this.initializeProductDetail();
+        console.log(this.productDetails, this.product.productDetails)
+    }
 })
 </script>
 
 <template>
-    <v-dialog v-model="dialog" max-width="800px">
+    <v-btn class="d-flex" color="primary" @click="showDialog = true">Thêm chi tiết</v-btn>
+    <v-dialog v-model="showDialog" max-width="800px" :persistent="true">
         <v-card>
             <v-card-title>
-                <span class="headline">{{product.name}}</span>
+                <span class="headline">{{ product.name }}</span>
             </v-card-title>
             <v-card-text>
                 <!--cho chọn ảnh, thêm màu, thêm size-->
-                <v-container v-for="(i,index) in totalDetail" :key="index">
+                <v-container v-for="(i,index) in productDetails" :key="index">
                     <v-row>
                         <v-col cols="12" sm="6" md="4">
-                            <v-card>
-                                <v-img :src="productDetails[i].image" height="200px"></v-img>
-                            </v-card>
+                            <span class="headline">Size</span>
+                            <v-select
+                                v-model="productDetails[index].sizeId"
+                                :items="sizeList"
+                                item-title="name"
+                                item-value="id"
+                                label="Size"
+                            ></v-select>
                         </v-col>
                         <v-col cols="12" sm="6" md="4">
-                            <v-card>
-                                <v-card-title>
-                                    <span class="headline">Size</span>
-                                </v-card-title>
-                                <v-card-text>
-                                    <v-select
-                                        v-model="productDetails[i].sizeId"
-                                        :items="productDetails[i].product.sizeList"
-                                        item-text="name"
-                                        item-value="id"
-                                        label="Size"
-                                    ></v-select>
-                                </v-card-text>
-                            </v-card>
+                            <span class="headline">Màu</span>
+                            <v-select
+                                v-model="productDetails[index].colorId"
+                                :items="colorList"
+                                item-title="name"
+                                item-value="id"
+                                label="Color"></v-select>
                         </v-col>
+                    </v-row>
+                    <v-row>
                         <v-col cols="12" sm="6" md="4">
-                            <v-card>
-                                <v-card-title>
-                                    <span class="headline">Color</span>
-                                </v-card-title>
-                                <v-card-text>
-                                    <v-select
-                                        v-model="productDetails[i].colorId"
-                                        :items="productDetails[i].product.colorList"
-                                        item-text="name"
-                                        item-value="id"
-                                        label="Color"
-                                    ></v-select>
-                                </v-card-text>
-                            </v-card>
+                            <v-text-field
+                                v-model="productDetails[index].quantity"
+                                label="Số lượng"
+                                type="number"
+                            ></v-text-field>
+                        </v-col>
+                        <v-col cols="12" sm="6" md="4" v-show="!productDetails[index].image">
+                            <v-file-input
+                                v-model="files"
+                                label="Ảnh"
+                                @change="uploadFile(index)"
+                            ></v-file-input>
+                        </v-col>
+                        <v-col cols="12" sm="6" md="4" v-show="productDetails[index].image">
+                            <v-img
+                                role="button"
+                                @click="() => productDetails[index].image = ''"
+                                :src="'data:image/png;base64,' + productDetails[index].image"
+                                width="100"
+                                height="100"
+                            ></v-img>
                         </v-col>
                     </v-row>
                 </v-container>
+                <v-btn color="primary" @click="addDetail">Thêm</v-btn>
             </v-card-text>
             <v-card-actions>
-                <v-btn color="blue darken-1" text @click="dialog = false">Đóng</v-btn>
+                <v-btn color="blue darken-1" text @click="showDialog = false">Đóng</v-btn>
             </v-card-actions>
         </v-card>
     </v-dialog>

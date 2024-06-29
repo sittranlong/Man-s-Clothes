@@ -77,7 +77,7 @@ const router = createRouter({
             meta: {
                 requiresAuth: true,
                 isAdmin: true
-            }
+            },
         },
         {
             path: '/admin/category/:id',
@@ -114,6 +114,38 @@ const router = createRouter({
         {
             path: '/admin/product/:id',
             component: () => import('@/views/pages/admin/product/ProductDetailPage.vue'),
+            meta: {
+                requiresAuth: true,
+                isAdmin: true
+            }
+        },
+        {
+            path: '/admin/color',
+            component: () => import('@/views/pages/admin/color/ColorPage.vue'),
+            meta: {
+                requiresAuth: true,
+                isAdmin: true
+            }
+        },
+        {
+            path: '/admin/color/:id',
+            component: () => import('@/views/pages/admin/color/ColorDetailPage.vue'),
+            meta: {
+                requiresAuth: true,
+                isAdmin: true
+            }
+        },
+        {
+            path: '/admin/size',
+            component: () => import('@/views/pages/admin/size/SizePage.vue'),
+            meta: {
+                requiresAuth: true,
+                isAdmin: true
+            }
+        },
+        {
+            path: '/admin/size/:id',
+            component: () => import('@/views/pages/admin/size/SizeDetailPage.vue'),
             meta: {
                 requiresAuth: true,
                 isAdmin: true

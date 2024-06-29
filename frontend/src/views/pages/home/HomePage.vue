@@ -25,9 +25,9 @@ export default defineComponent({
     setup() {
         const productList = ref([] as ProductCard[]);
         const productService = inject('productService') as ProductService;
-        productService.findAll().then(res => {
-            productList.value = res;
-        });
+        const loadProductList = async () => {
+            productList.value = await productService.findByFilter({page: 0, size: 20});
+        }
         const loadingComponent = <LoadingComponent loading={true}/>
 
         return () => (

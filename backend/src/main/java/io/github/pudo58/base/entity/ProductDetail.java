@@ -1,5 +1,6 @@
 package io.github.pudo58.base.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -16,6 +17,7 @@ public class ProductDetail extends BaseEntity {
     private Color color;
 
     @ManyToOne(cascade = CascadeType.ALL)
+    @JsonIgnore
     private Product product;
     private Integer quantity;
     @Lob

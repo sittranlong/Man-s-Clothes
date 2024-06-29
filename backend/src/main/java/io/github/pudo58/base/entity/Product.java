@@ -1,6 +1,7 @@
 package io.github.pudo58.base.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import io.github.pudo58.constant.ProductConst;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -33,8 +34,11 @@ public class Product extends BaseEntity {
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL, targetEntity = MetaConfig.class)
     private MetaConfig metaConfig;
 
-    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "product", fetch = FetchType.EAGER, cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REMOVE})
     private List<ProductDetail> productDetails = new ArrayList<>();
+
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REMOVE})
+    private List<Review> reviews = new ArrayList<>();
 
     // request insert
     @Transient
@@ -43,4 +47,9 @@ public class Product extends BaseEntity {
     private UUID brandId;
     @Transient
     private String imageBase64;
+
+    @Override
+    public void prePersist() {
+        this.status = ProductConst.STATUS_ACTIVE;
+    }
 }

@@ -24,9 +24,7 @@ public class WishListServiceImpl implements WishListService {
     @Transactional(rollbackOn = IllegalArgumentException.class)
     public ResponseEntity<?> add(UUID productId) {
         User user = User.getContext();
-        if (user == null) {
-            throw new IllegalArgumentException(message.getMessage("authentication.required"));
-        }
+        validateUser(productId);
         productRepo.findById(productId).ifPresent(product -> {
             Wishlist wishlist = new Wishlist();
             wishlist.setUser(user);
@@ -51,5 +49,22 @@ public class WishListServiceImpl implements WishListService {
     @Transactional(rollbackOn = IllegalArgumentException.class)
     public void removeMultiple(List<UUID> productIds) {
         wishListRepo.deleteAllById(productIds);
+    }
+
+    @Override
+    public int countAll() {
+        return wishListRepo.findAllByUserId(User.getContextId()).size();
+    }
+
+    private void validateUser(UUID productId) {
+        User user = User.getContext();
+        if (user == null) {
+            throw new IllegalArgumentException(message.getMessage("authentication.required"));
+        }
+        List<Wishlist> wishlist = wishListRepo.findByUserIdAndProductId(user.getId(), productId);
+        if (!wishlist.isEmpty()) {
+            throw new IllegalArgumentException(message.getMessage("wishlist.already-exist"));
+        }
+
     }
 }

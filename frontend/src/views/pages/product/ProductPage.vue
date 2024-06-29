@@ -24,9 +24,12 @@
                             </ul>
                         </div>
                         <div>
-                            <div>
+                            <div class="d-flex">
                                 <input class="form-control mb-3 mb-lg-2 mb-sm-2 mb-xxl-2" type="text"
-                                       placeholder="Search"/>
+                                       placeholder="Search" v-model="params.keyword"/>
+                                <button class="btn btn-sm btn-primary mb-3 mb-lg-2 mb-sm-2 mb-xxl-2" @click="getProductPage">
+                                    <i class="fa fa-search"></i>
+                                </button>
                             </div>
                             <!-- Categories -->
                             <div>
@@ -36,7 +39,7 @@
                                         <div>
                                             <input :id="item.name" class="m-1" type="checkbox" :value="item.id"
                                                    :name="item.name"
-                                                   v-model="categoryIdListSelected"/>
+                                                   v-model="params.categoryIdList"/>
                                             <label :for="item.name">{{ item.name }}</label>
                                         </div>
                                     </template>
@@ -50,22 +53,8 @@
                                         <div>
                                             <input :id="item.name" class="m-1" type="checkbox" :value="item.id"
                                                    :name="item.name"
-                                                   v-model="brandIdListSelected"/>
+                                                   v-model="params.brandIdList"/>
                                             <label :for="item.name">{{ item.name }}</label>
-                                        </div>
-                                    </template>
-                                </ul>
-                            </div>
-                            <!-- Price -->
-                            <div>
-                                <h4>Price</h4>
-                                <ul class="m-4">
-                                    <template v-for="priceRange in priceRanges" :key="priceRange.value">
-                                        <div>
-                                            <input :id="priceRange.label" class="m-1" type="checkbox"
-                                                   :value="priceRange.value"
-                                                   :name="priceRange.label" v-model="priceRangeListSelected"/>
-                                            <label :for="priceRange.label">{{ priceRange.label }}</label>
                                         </div>
                                     </template>
                                 </ul>
@@ -75,18 +64,15 @@
                     <div class="col-md-10 box">
                         <div class="filters">
                             <ul>
-                                <li class="active">All Products</li>
-                                <li>Featured</li>
-                                <li>Flash Deals</li>
-                                <li>Last Minute</li>
+                                <li class="active">Tất cả sản phẩm</li>
                             </ul>
                         </div>
                         <div>
                             <div class="filters-content">
-                                <div class="row grid" v-if="productList && productList.length > 0">
+                                <div class="row grid" v-if="productPage && productPage.totalElements > 0">
                                     <product-component
-                                        v-for="product in productList"
-                                        :key="product.title"
+                                        v-for="product in productPage.content"
+                                        :key="product.id"
                                         :class="PRODUCT_RESPONSIVE_CLASS.four"
                                         :product="product"
                                     />
@@ -94,7 +80,9 @@
                             </div>
                         </div>
                         <div class="col-md-12">
-                            <page-component :page="0" :total-page="10" @page-change.prevent="() => {}"/>
+                            <page-component :last="productPage.last" :first="productPage.first" :key="productPage"
+                                            :page="params?.page" :total-page="productPage.totalPages"
+                                            :page-change="pageChange"/>
                         </div>
                     </div>
                 </div>
@@ -108,13 +96,16 @@
 <script lang="ts">
 import HeaderComponent from "@/components/header/HeaderComponent.vue";
 import FooterComponent from "@/components/footer/FooterComponent.vue";
-import {defineComponent} from "vue";
-import {ProductCard} from "@/base/model/product.model";
+import {defineComponent, inject} from "vue";
 import {PRODUCT_RESPONSIVE_CLASS} from "@/plugins/utils";
 import ProductComponent from "@/components/product/ProductComponent.vue";
-import PageComponent from "@/components/pages/PageComponent.vue";
 import LoadingComponent from "@/components/loading/LoadingComponent.vue";
 import {ProductService} from "@/base/service/product.service";
+import {BrandService} from "@/base/service/brand.service";
+import {CategoryService} from "@/base/service/category.service";
+import PageComponent from "@/components/pages/PageComponent.vue";
+import {Category} from "@/base/model/category.model";
+import {Brand} from "@/base/model/brand.model";
 
 export default defineComponent({
     name: 'ProductPage',
@@ -130,46 +121,51 @@ export default defineComponent({
             brandIdListSelected: [],
             categoryIdListSelected: [],
             priceRangeListSelected: [],
-            productList: [] as ProductCard[]
+            categoryList: [] as Category[],
+            brandList: [] as Brand[],
+            productPage: {
+                content: [],
+                totalPages: 0,
+                totalElements: 0,
+                last: true,
+                first: true,
+                size: 0,
+            } as any,
+            params: {
+                page: 0,
+                size: 2,
+                keyword: '',
+                categoryIdList: [] as string[],
+                brandIdList: [] as string[],
+            },
         }
     },
     methods: {
-        async getProductList() {
-            const productService = new ProductService();
-            const res = await productService.findAll();
-            this.productList = res;
+        async getProductPage() {
+            this.productPage = await this.productService.findByFilter(this.params);
+        },
+        async pageChange(page: number) {
+            this.params.page = page;
+            await this.getProductPage();
+        },
+        async loadCategoryList() {
+            this.categoryList = await this.categoryService.findAllCategory();
+        },
+        async loadBrandList() {
+            this.brandList = await this.brandService.findAllBrand();
         }
     },
-    mounted() {
-        this.getProductList();
+    created() {
+        this.getProductPage();
+        this.loadCategoryList();
+        this.loadBrandList();
     },
     setup() {
-        const categoryList = [
-            {id: 1, name: 'Category 1'},
-            {id: 2, name: 'Category 2'},
-            {id: 3, name: 'Category 3'},
-            {id: 4, name: 'Category 4'},
-            {id: 5, name: 'Category 5'},
-        ];
-        const brandList = [
-            {id: 1, name: 'Brand 1'},
-            {id: 2, name: 'Brand 2'},
-            {id: 3, name: 'Brand 3'},
-            {id: 4, name: 'Brand 4'},
-            {id: 5, name: 'Brand 5'},
-        ];
-        const priceRanges = [
-            {value: 1, label: 'Price 1'},
-            {value: 2, label: 'Price 2'},
-            {value: 3, label: 'Price 3'},
-            {value: 4, label: 'Price 4'},
-            {value: 5, label: 'Price 5'},
-        ];
         return {
-            categoryList,
-            brandList,
-            priceRanges,
-            PRODUCT_RESPONSIVE_CLASS
+            PRODUCT_RESPONSIVE_CLASS,
+            productService: inject('productService') as ProductService,
+            brandService: inject('brandService') as BrandService,
+            categoryService: inject('categoryService') as CategoryService,
         }
     }
 })

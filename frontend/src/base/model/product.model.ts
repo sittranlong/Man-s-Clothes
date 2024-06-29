@@ -20,7 +20,7 @@ export class Product {
 
 export class ProductCard {
     id?: number;
-    title?: string;
+    name?: string;
     price?: number;
     description?: string;
     image?: string;
@@ -54,12 +54,12 @@ export class MetaConfig {
 
 export class ProductDetail {
     id?: number;
-    size?: Size;
-    color?: Color;
-    product?: Product;
-    quantity?: number;
-    image?: string;
-    sizeId?: number;
-    colorId?: number;
-    imageBase64?: string;
+    size?: Size = new Size();
+    color?: Color = new Color();
+    product?: Product = new Product();
+    quantity?: number = 0;
+    image?: string = '';
+    sizeId?: string = '';
+    colorId?: string = '';
+    imageBase64?: string = '';
 }

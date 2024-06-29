@@ -8,9 +8,10 @@ import {CategoryService} from "@/base/service/category.service";
 import {BrandService} from "@/base/service/brand.service";
 import {Brand} from "@/base/model/brand.model";
 import {Category} from "@/base/model/category.model";
-
+import ProductDetailDialogComponent from "@/components/admin/product/ProductDetailDialogComponent.vue";
 export default defineComponent({
     name: 'ProductDetailComponent',
+    components: {ProductDetailDialogComponent},
     setup() {
         return {
             productService: inject('productService') as ProductService,
@@ -35,6 +36,7 @@ export default defineComponent({
             this.router.push('/admin/product');
         },
         async submit() {
+            this.product.productDetails = this.$refs?.productDetail?.productDetails || [];
             if (this.product.id) {
                 if (this.image.length > 0) {
                     const reader = new FileReader();
@@ -83,21 +85,30 @@ export default defineComponent({
                 });
             }
         },
-        async loadCategoryList() {
-            this.categoryList = await this.categoryService.findAll();
+        loadCategoryList() {
+            this.categoryService.findAll().then((data: Category[]) => {
+                this.categoryList = data;
+            });
         },
-        async loadBrandList() {
-            this.brandList = await this.brandService.findAll();
+        loadBrandList() {
+            this.brandService.findAll().then((data: Brand[]) => {
+                this.brandList = data;
+            });
         },
         clickImage() {
             document.getElementById('image')?.click();
+        },
+        async getProductDetail() {
+            if (this.id !== 'new') {
+                this.productService.getById(this.id).then((data: Product) => {
+                    this.product = data;
+                });
+            }
         }
     },
     created() {
         this.id = this.route?.params.id as string;
-        this.productService.getById(this.id).then((data: Product) => {
-            this.product = data;
-        });
+        this.getProductDetail();
         this.loadCategoryList();
         this.loadBrandList();
     }
@@ -109,29 +120,35 @@ export default defineComponent({
             <h1>Chi tiết sản phẩm</h1>
         </div>
         <div class="d-flex justify-content-center">
-            <v-form class="container row col-6">
+            <v-form class="container">
                 <v-text-field v-model="product.name" label="Tên sản phẩm" class="col"
                               :rules="[v => !!v || 'Tên sản phẩm không được để trống']"></v-text-field>
                 <v-text-field v-model="product.description" label="Mô tả" class="col"
                               :rules="[v => !!v || 'Mô tả không được để trống']"></v-text-field>
-                <v-text-field v-model="product.price" label="Giá" class="col"
+                <v-text-field type="number" v-model="product.price" label="Giá" class="col"
                               :rules="[v => !!v || 'Giá không được để trống']"></v-text-field>
-                <v-text-field v-model="product.discountPercent" label="Giảm giá" class="col"
-                              :rules="[v => !!v || 'Giảm giá không được để trống']"></v-text-field>
+                <v-text-field type="number" v-model="product.discountPercent" label="Giảm giá" class="col"></v-text-field>
                 <v-select v-model="product.categoryId" :items="categoryList" label="Danh mục" class="col" item-title="name"
                           item-value="id"></v-select>
                 <v-select v-model="product.brandId" :items="brandList" label="Thương hiệu" class="col" item-title="name"
-                            item-value="id"></v-select>
+                          item-value="id"></v-select>
                 <v-file-input id="image" v-show="!product.image" v-model="image" label="Ảnh" class="col"></v-file-input>
                 <div class="col" v-show="product.image">
-                    <v-img role="button" @click="clickImage" :src="'data:image/png;base64,'+ product.image" width="100" height="100"></v-img>
+                    <v-img role="button" @click="clickImage" :src="'data:image/png;base64,'+ product.image" width="100"
+                           height="100"></v-img>
                 </div>
-                <div class="row">
+                <ProductDetailDialogComponent class="mb-3" :key="product.id" ref="productDetail" :product="product"></ProductDetailDialogComponent>
+                <div class="row my-3">
                     <v-btn class="col" color="secondary" @click="back">Quay lại</v-btn>
                     <v-btn class="col" color="primary" @click="submit">Lưu</v-btn>
                 </div>
             </v-form>
         </div>
-
     </div>
 </template>
+
+<style scoped>
+.container {
+    max-width: 80%;
+}
+</style>

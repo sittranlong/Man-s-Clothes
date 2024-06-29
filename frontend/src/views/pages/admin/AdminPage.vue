@@ -61,14 +61,14 @@ export default defineComponent({
     data() {
         return {
             component: [
-                {name: 'chart', show: false, label: 'Thống kê', routerLink: '/admin/chart'},
                 {name: 'user', show: false, label: 'Quản lý người dùng', routerLink: '/admin/user'},
                 {name: 'category', show: false, label: 'Quản lý danh mục', routerLink: '/admin/category'},
                 {name: 'brand', show: false, label: 'Quản lý thương hiệu', routerLink: '/admin/brand'},
+                {name: 'color', show: false, label: 'Quản lý màu', routerLink: '/admin/color'},
+                {name: 'size', show: false, label: 'Quản lý kích cỡ', routerLink: '/admin/size'},
                 {name: 'product', show: false, label: 'Quản lý sản phẩm', routerLink: '/admin/product'},
                 {name: 'post', show: false, label: 'Quản lý bài viết', routerLink: '/admin/post'},
                 {name: 'voucher', show: false, label: 'Quản lý voucher', routerLink: '/admin/voucher'},
-                {name: 'Chat', show: false, label: 'Quản lý tin nhắn', routerLink: '/admin/message'},
                 {name: 'order', show: false, label: 'Quản lý đơn hàng', routerLink: '/admin/order'},
             ],
             userCurrent : this.store.state.user as User
@@ -80,7 +80,6 @@ export default defineComponent({
         }
     },
     created() {
-        console.log(1, this.store.state.user)
     }
     ,
     setup(){

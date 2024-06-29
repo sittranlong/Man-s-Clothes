@@ -1,18 +1,12 @@
 import axios from "axios";
 
 export class ProductService {
-    private url = 'https://fakestoreapi.com/products';
+    private url = '/v2/product';
     private adminUrl = '/product'
     private store: any;
 
     constructor(store) {
         this.store = store;
-    }
-
-
-    public async findAll() {
-        const response = await axios.get(this.url);
-        return response.data;
     }
 
     public async findBySearch(model: any) {
@@ -21,6 +15,11 @@ export class ProductService {
                 Authorization: `${this.store?.getters.getToken}`
             }
         });
+        return response.data;
+    }
+
+    public async findByFilter(model: any) {
+        const response = await axios.post(`${this.url}/findByFilter`, model);
         return response.data;
     }
 
