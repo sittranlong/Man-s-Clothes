@@ -1,15 +1,16 @@
 import axios from "axios";
 
-export class UserService {
-    private url = '/v2/user';
-    private adminUrl = '/user';
+export class BrandService {
+    private url = '/v2/brand';
+    private adminUrl = '/brand';
     private store: any;
 
     constructor(store) {
         this.store = store;
     }
+
     async update(model: any) {
-        const response = await axios.post(`${this.url}/update`, model, {
+        const response = await axios.put(`${this.adminUrl}/update/${model.id}`, model, {
             headers: {
                 Authorization: `${this.store?.getters.getToken}`
             }
@@ -62,12 +63,10 @@ export class UserService {
         return response.data;
     }
 
-    async findAdmin() {
-        const response = await axios.get(`${this.url}/findAdmin`, {
-            headers: {
-                Authorization: `${this.store?.getters.getToken}`
-            }
-        });
+    // for client
+
+    async findAllCategoryClient() {
+        const response = await axios.get(`${this.url}/findAll`);
         return response.data;
     }
 }

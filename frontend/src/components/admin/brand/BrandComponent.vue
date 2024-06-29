@@ -1,25 +1,26 @@
 <script lang="ts">
 import {defineComponent, inject} from 'vue'
 import {toast} from "vue3-toastify";
-import {CategoryService} from "@/base/service/category.service";
+import {BrandService} from "@/base/service/brand.service";
+import {useRouter} from "vue-router";
 
 export default defineComponent({
-    name: 'CategoryComponent',
+    name: 'BrandComponent',
     setup() {
         const headers = [
             {title: 'STT', value: 'index'},
-            {title: 'Tên danh mục', value: 'name'},
-            {title: 'Danh mục cha', value: 'parent'},
+            {title: 'Tên thương hiệu', value: 'name'},
             {title: 'Hành động', value: 'action'}
         ];
         return {
             headers,
-            categoryService: inject('categoryService') as CategoryService,
+            brandService: inject('brandService') as BrandService,
+            router : useRouter()
         }
     },
     data() {
         return {
-            categoryPage: {
+            brandPage: {
                 content: [],
                 totalPages: 0,
                 totalElements: 0,
@@ -37,19 +38,19 @@ export default defineComponent({
     methods: {
         async search() {
             this.isLoading = true;
-            this.categoryService.findBySearch(this.searchParams).then((data) => {
-                this.categoryPage = data;
+            this.brandService.findBySearch(this.searchParams).then((data) => {
+                this.brandPage = data;
             }).finally(() => {
                 this.isLoading = false;
             });
         },
         viewDetail(item: any) {
-            this.$router.push('/admin/category/' + item.id);
+            this.router.push('/admin/brand/' + item.id);
         },
-        deleteCategory(item: any) {
+        deleteBrand(item: any) {
             if (item) {
                 if (confirm('Bạn có chắc chắn muốn xóa danh mục này ?')) {
-                    this.categoryService.delete(item?.id).then(() => {
+                    this.brandService.delete(item?.id).then(() => {
                         this.search();
                         toast.success('Xóa danh mục thành công');
                     });
@@ -65,7 +66,7 @@ export default defineComponent({
 </script>
 <template>
     <div class="text-dark">
-        <h1>Danh sách danh mục</h1>
+        <h1>Danh sách thương hiệu</h1>
         <v-text-field
             v-model="searchParams.keyword"
             label="Search"
@@ -75,27 +76,24 @@ export default defineComponent({
             @change="search"
             single-line
         ></v-text-field>
-        <v-btn color="primary" @click="() => $router.push('/admin/category/new')">Thêm mới</v-btn>
+        <v-btn color="primary" @click="() => router.push('/admin/brand/new')">Thêm mới</v-btn>
         <v-data-table
             :headers="headers"
-            :items="categoryPage.content"
+            :items="brandPage.content"
             :loading="isLoading"
             :items-per-page="searchParams.size"
             :on-update:items-per-page="search"
             :page="searchParams.page"
             :on-update:page="search"
             :search="searchParams.keyword"
-            :total-items="categoryPage.totalElements">
+            :total-items="brandPage.totalElements">
             <template v-slot:[`item.index`]="{index}">
                 <td>{{index + 1}}</td>
-            </template>
-            <template v-slot:[`item.parent`]="{item}">
-                <td>{{item.parent?.name}}</td>
             </template>
             <template v-slot:[`item.action`]="{item}">
                 <td>
                     <v-icon left @click="viewDetail(item)">mdi-eye</v-icon>
-                    <v-icon left @click="deleteCategory(item)">mdi-delete</v-icon>
+                    <v-icon left @click="deleteBrand(item)">mdi-delete</v-icon>
                 </td>
             </template>
         </v-data-table>

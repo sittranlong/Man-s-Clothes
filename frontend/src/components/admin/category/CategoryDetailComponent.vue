@@ -1,14 +1,17 @@
 <script lang="ts">
 import {defineComponent, inject} from "vue";
-import {Category, User} from "@/base/model/category.model";
+import {Category} from "@/base/model/category.model";
 import {CategoryService} from "@/base/service/category.service";
 import {toast} from "vue3-toastify";
+import {useRoute, useRouter} from "vue-router";
 
 export default defineComponent({
     name: 'CategoryDetailComponent',
     setup() {
         return {
-            categoryService: inject('categoryService') as CategoryService
+            categoryService: inject('categoryService') as CategoryService,
+            router : useRouter(),
+            route : useRoute()
         }
     },
     data() {
@@ -20,7 +23,7 @@ export default defineComponent({
     },
     methods: {
         back() {
-            this.$router.push('/admin/category');
+            this.router.push('/admin/category');
         },
         loadCategoryList() {
             this.categoryService.findAll().then((data: Category[]) => {
@@ -30,19 +33,19 @@ export default defineComponent({
         submit() {
             if (this.category.id) {
                 this.categoryService.update(this.category).then(() => {
-                    this.$router.push('/admin/category');
+                    this.router.push('/admin/category');
                     toast.success('Cập nhật thành công');
                 });
             } else {
                 this.categoryService.save(this.category).then(() => {
-                    this.$router.push('/admin/category');
+                    this.router.push('/admin/category');
                     toast.success('Thêm mới thành công');
                 });
             }
         }
     },
     created() {
-        this.id = this.$route.params.id as string;
+        this.id = this.route?.params.id as string;
         this.categoryService.get(this.id).then((data: Category) => {
             this.category = data;
         });

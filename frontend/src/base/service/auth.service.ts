@@ -23,7 +23,7 @@ export class AuthService {
     public logout() {
         return axios.post(`${this.url}/logout`, {}, {
             headers: {
-                Authorization: `Bearer ${this.store?.getters.getToken}`
+                Authorization: `${this.store?.getters.getToken}`
             }
         });
     }

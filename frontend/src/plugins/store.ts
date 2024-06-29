@@ -29,7 +29,7 @@ const store = createStore({
             return state.user
         },
         getToken(state: any) {
-            return state.user?.token
+            return 'Bearer ' + state.user?.token
         },
         isAdmin(state: any) {
             return state.user?.roleList?.includes('ROLE_ADMIN')

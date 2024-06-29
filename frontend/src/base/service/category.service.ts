@@ -1,13 +1,18 @@
 import axios from "axios";
 
 export class CategoryService {
-    public url = '/v2/category';
-    public adminUrl = '/category';
+    private url = '/v2/category';
+    private adminUrl = '/category';
+    private store: any;
+
+    constructor(store) {
+        this.store = store;
+    }
 
     async update(model: any) {
         const response = await axios.put(`${this.adminUrl}/update/${model.id}`, model, {
             headers: {
-                Authorization: `Bearer ${localStorage.getItem('token')}`
+                Authorization: `${this.store?.getters.getToken}`
             }
         });
         return response.data;
@@ -16,7 +21,7 @@ export class CategoryService {
     async save(model: any) {
         const response = await axios.post(`${this.adminUrl}/save`, model, {
             headers: {
-                Authorization: `Bearer ${localStorage.getItem('token')}`
+                Authorization: `${this.store?.getters.getToken}`
             }
         });
         return response.data;
@@ -25,7 +30,7 @@ export class CategoryService {
     async delete(id: string) {
         const response = await axios.delete(`${this.adminUrl}/delete/${id}`, {
             headers: {
-                Authorization: `Bearer ${localStorage.getItem('token')}`
+                Authorization: `${this.store?.getters.getToken}`
             }
         });
         return response.data;
@@ -34,7 +39,7 @@ export class CategoryService {
     async get(id: string) {
         const response = await axios.get(`${this.adminUrl}/get/${id}`, {
             headers: {
-                Authorization: `Bearer ${localStorage.getItem('token')}`
+                Authorization: `${this.store?.getters.getToken}`
             }
         });
         return response.data;
@@ -43,7 +48,7 @@ export class CategoryService {
     async findAll() {
         const response = await axios.get(`${this.adminUrl}/findAll`, {
             headers: {
-                Authorization: `Bearer ${localStorage.getItem('token')}`
+                Authorization: `${this.store?.getters.getToken}`
             }
         });
         return response.data;
@@ -52,7 +57,7 @@ export class CategoryService {
     async findBySearch(model: any) {
         const response = await axios.post(`${this.adminUrl}/findBySearch`, model, {
             headers: {
-                Authorization: `Bearer ${localStorage.getItem('token')}`
+                Authorization: `${this.store?.getters.getToken}`
             }
         });
         return response.data;
@@ -60,7 +65,7 @@ export class CategoryService {
 
     // for client
 
-    async findAllCategoryClient(){
+    async findAllCategoryClient() {
         const response = await axios.get(`${this.url}/findAll`);
         return response.data;
     }
