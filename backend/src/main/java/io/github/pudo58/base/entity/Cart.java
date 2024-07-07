@@ -1,5 +1,6 @@
 package io.github.pudo58.base.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToOne;
 import lombok.Getter;
@@ -16,6 +17,7 @@ public class Cart extends BaseEntity {
     private ProductDetail productDetail;
 
     @ManyToOne
+    @JsonIgnore
     private User user;
 
 }

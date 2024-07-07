@@ -17,14 +17,16 @@ import io.github.pudo58.util.EmailSender;
 import io.github.pudo58.util.Message;
 import io.github.pudo58.util.Random;
 import jakarta.mail.MessagingException;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
 
 import java.io.IOException;
 import java.util.Date;
@@ -47,7 +49,6 @@ public class UserServiceImpl extends AbstractService<User> implements UserServic
     private final Message message;
     @Value("${verify.email.expiryTime}")
     private long expiryTime;
-
     @Override
     @Transactional(rollbackFor = RuntimeException.class, readOnly = true)
     public User save(User user) {
@@ -123,7 +124,7 @@ public class UserServiceImpl extends AbstractService<User> implements UserServic
 
     private void addRole(User user) {
         try {
-            Role role = roleRepo.findAll((root, query, builder) -> builder.equal(root.get("name"), UserConst.ROLE_ADMIN)).stream().findFirst().orElse(null);
+            Role role = roleRepo.findAll((root, query, builder) -> builder.equal(root.get("name"), UserConst.ROLE_USER)).stream().findFirst().orElse(null);
             user.getRoleList().add(role);
         } catch (Throwable e) {
             throw new RuntimeException(e);

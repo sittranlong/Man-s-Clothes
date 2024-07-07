@@ -13,22 +13,31 @@ import io.github.pudo58.record.TokenRecord;
 import io.github.pudo58.record.UserRegisterRecord;
 import io.github.pudo58.util.Message;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.lang.NonNull;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.async.DeferredResult;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
+import reactor.core.publisher.Flux;
 
+import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.time.Duration;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @RestController
@@ -41,6 +50,8 @@ public class AuthV2Controller {
     private final TokenService tokenService;
     private final HttpServletRequest request;
     private final Message message;
+    @Value("classpath:demo.mkv")
+    private Resource resource;
 
     @PostMapping("/login")
     public TokenRecord authenticateAndGetToken(@RequestBody AuthRequest authRequest) {
@@ -52,7 +63,7 @@ public class AuthV2Controller {
                 User user = (User) authentication.getPrincipal();
                 Set<String> roleList = user.getRoleList().stream().map(Role::getName).collect(Collectors.toSet());
                 String username = authRequest.getUsername();
-                boolean rememberMe = Boolean.FALSE.equals(authRequest.getRememberMe());
+                boolean rememberMe = Boolean.TRUE.equals(authRequest.getRememberMe());
                 String token = rememberMe ? jwtService.generateRefreshToken(username) : jwtService.generateToken(username);
                 tokenService.saveToken(username, token);
                 return new TokenRecord(token, username, roleList, rememberMe);

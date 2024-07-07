@@ -1,44 +1,68 @@
 import {User} from "@/base/model/user.model";
-import {Tour} from "@/base/model/tour.model";
-import type {Customer} from "@/base/model/customer.model";
+import {Voucher} from "@/base/model/voucher.model";
+import {ProductDetail} from "@/base/model/product.model";
 
 export class Order {
-    public static STATUS_PENDING = 0;
-    public static STATUS_CONFIRMED = 1;
-    public static STATUS_CANCELLED = 2;
-    public static STATUS_COMPLETED = 3;
-    public static STATUS_REFUNDED = 4;
-    public static STATUS_EXPIRED = 5;
-    public static STATUS_FAILED = 6;
+    public static readonly STATUS_PENDING = "PENDING";
+    public static readonly STATUS_PROCESSING = "PROCESSING";
+    public static readonly STATUS_COMPLETED = "COMPLETED";
+    public static readonly STATUS_CANCELLED = "CANCELLED";
+    public static readonly STATUS_REFUNDED = "REFUNDED";
+    public static readonly STATUS_SHIPPING = "SHIPPING";
     id?: string;
     code?: string;
-    user?: User;
-    tour?: Tour;
-    quantityForAdult?: number;
-    quantityForChildren?: number;
-    quantityForBaby?: number;
-    totalAdult?: number;
-    totalChildren?: number;
-    totalBaby?: number;
-    totalPayment?: number;
-    totalDiscount?: number;
-    customers?: Customer[];
-    status?: number;
-    createDate?: Date;
+    total: number;
+    status?: string;
+    user: User;
+    voucher?: Voucher;
+    address: string;
+    phone: string;
+    note?: string;
+    paymentMethod: number
+    discount?: number;
+    shippingFee: number;
+    finalTotal: number;
+    orderDetails: OrderDetail[];
+}
+
+export class OrderDetail {
+    id?: string;
+    price: number;
+    quantity: number;
+    total: number;
+    status?: string;
+    order: Order;
+    productDetail: ProductDetail;
+}
+
+export interface OrderRequest {
+    orderId: string;
+    voucherCode: string;
+    reason: string;
+    address: string;
+    phone: string;
+    note: string;
+    paymentMethod: number;
+    cartIdList: string[];
+    name: string;
 }
 
 
 export const OrderStatus = [
-    {value: Order.STATUS_PENDING, text: 'Đang chờ xác nhận'},
-    {value: Order.STATUS_CONFIRMED, text: 'Đã xác nhận'},
-    {value: Order.STATUS_CANCELLED, text: 'Đã hủy'},
+    {value: Order.STATUS_PENDING, text: 'Chờ xác nhận'},
+    {value: Order.STATUS_PROCESSING, text: 'Đang xử lý'},
     {value: Order.STATUS_COMPLETED, text: 'Hoàn thành'},
+    {value: Order.STATUS_CANCELLED, text: 'Đã hủy'},
     {value: Order.STATUS_REFUNDED, text: 'Đã hoàn tiền'},
-    {value: Order.STATUS_EXPIRED, text: 'Hết hạn'},
-    {value: Order.STATUS_FAILED, text: 'Thất bại'},
+    {value: Order.STATUS_SHIPPING, text: 'Đang giao hàng'},
 ];
 
-export const OrderStatusText = (status: number | undefined) => {
+export const PaymentMethod = {
+    COD: {value: 1, text: 'Thanh toán khi nhận hàng'},
+    QRCODE: {value: 2, text: 'Thanh toán qua mã QR'},
+};
+
+export const OrderStatusText = (status: string | undefined) => {
     if (status) {
         const orderStatus = OrderStatus.find(item => item.value === status);
         return orderStatus ? orderStatus.text : '';

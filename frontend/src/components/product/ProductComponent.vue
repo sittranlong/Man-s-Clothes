@@ -6,6 +6,7 @@ import formatMoney from "@/plugins/utils";
 import DialogComponent from "@/components/dialog/DialogComponent.vue";
 import {toast} from 'vue3-toastify';
 import {WishlistService} from "@/base/service/wishlist.service";
+import {useRouter} from "vue-router";
 
 export default defineComponent({
     name: 'ProductComponent',
@@ -35,10 +36,11 @@ export default defineComponent({
                 });
             }
         }
+        const router = useRouter();
         return () => (
             <div>
                 <div class="product-card border-1 mb-7">
-                    <div role="button" title={product.value?.name} class="product-image"
+                    <div role="button" onclick={()=> router.push("/product/" + product.value.id)} title={product.value?.name} class="product-image"
                          style={{"background-image": 'url(data:image/png;base64,' + product.value?.image + ')'}}></div>
                     <div class="product-info">
                         <div class="product-title limit-line-1">{product.value?.name}</div>

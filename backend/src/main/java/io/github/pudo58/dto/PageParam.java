@@ -1,5 +1,8 @@
 package io.github.pudo58.dto;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+
 import java.io.Serializable;
 
 public class PageParam implements Serializable {
@@ -24,5 +27,8 @@ public class PageParam implements Serializable {
 
     public void setSize(Integer size) {
         this.size = size;
+    }
+    public Pageable getPageable() {
+        return PageRequest.of(getPage(), getSize());
     }
 }

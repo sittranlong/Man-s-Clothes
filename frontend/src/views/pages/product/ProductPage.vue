@@ -133,7 +133,7 @@ export default defineComponent({
             } as any,
             params: {
                 page: 0,
-                size: 2,
+                size: 20,
                 keyword: '',
                 categoryIdList: [] as string[],
                 brandIdList: [] as string[],

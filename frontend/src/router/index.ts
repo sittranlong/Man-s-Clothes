@@ -29,6 +29,10 @@ const router = createRouter({
             component: () => import('@/views/pages/product/ProductPage.vue')
         },
         {
+            path: '/product/:id',
+            component: () => import('@/views/pages/product/ProductDetailPage.vue')
+        },
+        {
             path: '/cart',
             component: () => import('@/views/pages/cart/CartPage.vue'),
         },
@@ -181,8 +185,12 @@ const router = createRouter({
             component: () => import('@/views/pages/admin/voucher/VoucherDetailPage.vue'),
         },
         {
+            path: '/checkout',
+            component: () => import('@/views/pages/checkout/CheckoutPage.vue'),
+        },
+        {
             path: '/:pathMatch(.*)*',
-            component: () => import('@/components/NotFoundComponent.vue')
+            component: () => import('@/components/NotFound.vue')
         },
 
     ]

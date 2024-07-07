@@ -1,16 +1,22 @@
 package io.github.pudo58.base.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.pudo58.base.entity.*;
 import io.github.pudo58.base.repo.CartRepo;
 import io.github.pudo58.base.repo.OrderRepo;
 import io.github.pudo58.base.repo.VoucherRepo;
 import io.github.pudo58.constant.OrderConst;
 import io.github.pudo58.constant.VoucherConst;
+import io.github.pudo58.dto.CommonRequest;
+import io.github.pudo58.dto.Contact;
+import io.github.pudo58.dto.OrderActionRequest;
 import io.github.pudo58.dto.OrderRequest;
 import io.github.pudo58.record.AlertResponseRecord;
 import io.github.pudo58.util.Message;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -19,6 +25,7 @@ import org.springframework.util.Assert;
 
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
@@ -34,6 +41,7 @@ public class OrderServiceImpl implements OrderService {
     private final CartRepo cartRepo;
     private final VoucherRepo voucherRepo;
     private final Message message;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     @Value("${vietqr.url}")
     private String vietQRURL;
@@ -42,11 +50,23 @@ public class OrderServiceImpl implements OrderService {
 
 
     @Override
+    public void saveContact(OrderRequest model) {
+        Assert.notNull(User.getContext(), message.getMessage("authentication.required"));
+        User user = User.getContext();
+        Contact contact = new Contact();
+        contact.setAddress(model.getAddress());
+        contact.setPhone(model.getPhone());
+        contact.setUser(user);
+        contact.setCartIdList(model.getCartIdList());
+        redisTemplate.opsForValue().set("contact:" + user.getId(), contact);
+    }
+
+    @Override
     @Transactional(rollbackFor = IllegalArgumentException.class)
     public ResponseEntity<?> createOrder(OrderRequest model) throws NoSuchAlgorithmException, IOException, InterruptedException, URISyntaxException {
         User user = User.getContext();
         Assert.notNull(user, message.getMessage("authentication.required"));
-        List<Cart> cartList = this.cartRepo.findByUserId(user.getId());
+        List<Cart> cartList = this.cartRepo.findAllById(model.getCartIdList());
         if (cartList.isEmpty()) {
             return ResponseEntity.badRequest().body(new AlertResponseRecord(message.getMessage("cart.empty"), HttpStatus.BAD_REQUEST.value()));
         } else {
@@ -57,10 +77,12 @@ public class OrderServiceImpl implements OrderService {
             order.setAddress(model.getAddress());
             order.setPhone(model.getPhone());
             order.setNote(model.getNote());
+            order.setName(model.getName());
             order.setPaymentMethod(model.getPaymentMethod());
-            order.setShippingFee(shippingFee);
             order.setTotal(cartList.stream().mapToInt(cart -> cart.getProductDetail().getProduct().getPrice() * cart.getQuantity()).sum());
+            int shippingFee = order.getTotal() > 1_000_000 ? 0 : this.shippingFee;
             order.setFinalTotal(order.getTotal());
+            order.setShippingFee(shippingFee);
             Voucher voucher = voucherRepo.findByCode(model.getVoucherCode()).orElse(null);
             if (voucher != null) {
                 if (VoucherConst.STATUS_INACTIVE.equals(voucher.getStatus())) {
@@ -82,15 +104,7 @@ public class OrderServiceImpl implements OrderService {
                 voucherRepo.save(voucher);
 
                 // calculate discount
-                int discount = 0;
-                if (VoucherConst.TYPE_PERCENT.equals(voucher.getType())) {
-                    discount = (order.getFinalTotal() * voucher.getDiscount() / 100);
-                    if (discount > voucher.getMaxDiscount()) {
-                        discount = voucher.getMaxDiscount();
-                    }
-                } else if (VoucherConst.TYPE_FIXED.equals(voucher.getType())) {
-                    discount = voucher.getDiscount();
-                }
+                int discount = voucher.getDiscountValue(order.getTotal());
                 order.setDiscount(discount);
                 order.setFinalTotal(order.getFinalTotal() - discount + shippingFee);
             } else {
@@ -109,6 +123,68 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    public ResponseEntity<?> getOrderInfo(OrderRequest model) throws URISyntaxException, NoSuchAlgorithmException, IOException, InterruptedException {
+        Assert.notNull(User.getContext(), message.getMessage("authentication.required"));
+        List<Cart> cartList = this.cartRepo.findAllById(model.getCartIdList());
+        if (cartList.isEmpty()) {
+            return ResponseEntity.badRequest().body(new AlertResponseRecord(message.getMessage("cart.empty"), HttpStatus.BAD_REQUEST.value()));
+        } else {
+            int total = cartList.stream().mapToInt(cart -> cart.getProductDetail().getProduct().getPrice() * cart.getQuantity()).sum();
+            int shippingFee = total > 1_000_000 ? 0 : this.shippingFee;
+            int finalTotal = total + shippingFee;
+            int voucherDiscount = 0;
+            if (model.getVoucherCode() != null) {
+                Voucher voucher = voucherRepo.findByCode(model.getVoucherCode()).orElse(null);
+                if (voucher != null) {
+                    if (VoucherConst.STATUS_INACTIVE.equals(voucher.getStatus())) {
+                        return ResponseEntity.badRequest().body(new AlertResponseRecord(message.getMessage("voucher.invalid"), HttpStatus.BAD_REQUEST.value()));
+                    }
+                    // check startDate, endDate
+                    Date currentDate = new Date();
+                    if (currentDate.before(voucher.getStartDate()) || currentDate.after(voucher.getEndDate())) {
+                        return ResponseEntity.badRequest().body(new AlertResponseRecord(message.getMessage("voucher.invalid"), HttpStatus.BAD_REQUEST.value()));
+                    }
+                    if (voucher.getMaxUsage() != null && voucher.getUsage() >= voucher.getMaxUsage()) {
+                        return ResponseEntity.badRequest().body(new AlertResponseRecord(message.getMessage("voucher.expired"), HttpStatus.BAD_REQUEST.value()));
+                    }
+                    if (voucher.getMinTotal() != null && finalTotal < voucher.getMinTotal()) {
+                        return ResponseEntity.badRequest().body(new AlertResponseRecord(message.getMessage("voucher.invalid"), HttpStatus.BAD_REQUEST.value()));
+                    }
+                    finalTotal -= voucher.getDiscountValue(total);
+                    voucherDiscount = voucher.getDiscountValue(total);
+                } else {
+                    return ResponseEntity.badRequest().body(new AlertResponseRecord(message.getMessage("voucher.invalid"), HttpStatus.BAD_REQUEST.value()));
+                }
+            }
+            final String jsonPayload = "{\n" +
+                    "  \"accountNo\": \"0968242106\",\n" +
+                    "  \"accountName\": \"TRAN HOANG LONG\",\n" +
+                    "  \"acqId\": 970422,\n" +
+                    "  \"amount\": " + finalTotal + ",\n" +
+                    "  \"addInfo\": \"" + User.getContext().getUsername() + "-" + model.getName() + "- Thanh toan don hang gia tri " + finalTotal + " VND\",\n" +
+                    "  \"format\": \"text\",\n" +
+                    "  \"template\": \"compact2\"\n" +
+                    "}";
+            HttpURLConnection connection = (HttpURLConnection) new URI(vietQRURL).toURL().openConnection();
+            connection.setRequestMethod("POST");
+            connection.setRequestProperty("Content-Type", "application/json");
+            connection.setDoOutput(true);
+            connection.getOutputStream().write(jsonPayload.getBytes());
+            ObjectMapper objectMapper = new ObjectMapper();
+            Map<?, ?> qrCodeResponse = objectMapper.readValue(connection.getInputStream(), Map.class);
+            Map<String, Object> response = Map.of(
+                    "total", total,
+                    "shippingFee", shippingFee,
+                    "finalTotal", finalTotal,
+                    "cartList", cartList,
+                    "voucherDiscount", voucherDiscount,
+                    "qrCode", qrCodeResponse
+            );
+            return ResponseEntity.ok(response);
+        }
+    }
+
+    @Override
     public ResponseEntity<?> getQrCode(UUID orderId) throws NoSuchAlgorithmException, IOException, InterruptedException, URISyntaxException {
         Assert.notNull(User.getContext(), message.getMessage("authentication.required"));
         Order order = orderRepo.getByIdAndStatusIn(orderId, List.of(OrderConst.STATUS_PENDING, OrderConst.STATUS_PROCESSING));
@@ -116,11 +192,11 @@ public class OrderServiceImpl implements OrderService {
             return ResponseEntity.notFound().build();
         }
         final String jsonPayload = "{\n" +
-                "  \"accountNo\": \"0704145768\",\n" +
-                "  \"accountName\": \"LA VAN THO\",\n" +
-                "  \"acqId\": 970432,\n" +
+                "  \"accountNo\": \"0968242106\",\n" +
+                "  \"accountName\": \"TRAN HOANG LONG\",\n" +
+                "  \"acqId\": 970422,\n" +
                 "  \"amount\": " + order.getFinalTotal() + ",\n" +
-                "  \"addInfo\": \"" + User.getContext().getUsername() + "- Thanh toan tour gia tri " + order.getFinalTotal() + " VND\",\n" +
+                "  \"addInfo\": \"" + User.getContext().getUsername() + "-" + order.getName() + "- Thanh toan don hang gia tri " + order.getFinalTotal() + " VND\",\n" +
                 "  \"format\": \"text\",\n" +
                 "  \"template\": \"compact2\"\n" +
                 "}";
@@ -167,6 +243,59 @@ public class OrderServiceImpl implements OrderService {
         order.setStatus(OrderConst.STATUS_PROCESSING);
         orderRepo.save(order);
         return ResponseEntity.ok(new AlertResponseRecord(message.getMessage("order.approve-success"), HttpStatus.OK.value()));
+    }
+
+    @Override
+    public ResponseEntity<?> getDefaultContact() {
+        Assert.notNull(User.getContext(), message.getMessage("authentication.required"));
+        User user = User.getContext();
+        Map<String, Object> response = new HashMap<>();
+        response.put("address", user.getAddress());
+        response.put("phone", user.getPhone());
+        return ResponseEntity.ok(response);
+    }
+
+    @Override
+    public Page<Order> findBySearch(CommonRequest model) {
+        return this.orderRepo.findBySearch(model, model.getPageable());
+    }
+
+    @Override
+    @Transactional(rollbackFor = IllegalArgumentException.class)
+    public ResponseEntity<?> approve(OrderActionRequest model) {
+        Order order = orderRepo.getByIdAndStatusIn(model.getId(), List.of(OrderConst.STATUS_PENDING, OrderConst.STATUS_PROCESSING));
+        if (order == null) {
+            return ResponseEntity.notFound().build();
+        }
+        order.setStatus(OrderConst.STATUS_PROCESSING);
+        orderRepo.save(order);
+        return ResponseEntity.ok(new AlertResponseRecord(message.getMessage("order.approve-success"), HttpStatus.OK.value()));
+    }
+
+    @Override
+    @Transactional(rollbackFor = IllegalArgumentException.class)
+    public ResponseEntity<?> reject(OrderActionRequest model) {
+        Order order = orderRepo.getByIdAndStatusIn(model.getId(), List.of(OrderConst.STATUS_PENDING, OrderConst.STATUS_PROCESSING));
+        if (order == null) {
+            return ResponseEntity.notFound().build();
+        }
+        order.setStatus(OrderConst.STATUS_REJECTED);
+        order.setNote(model.getReason());
+        orderRepo.save(order);
+        this.rollbackVoucher(order);
+        return ResponseEntity.ok(new AlertResponseRecord(message.getMessage("order.reject-success"), HttpStatus.OK.value()));
+    }
+
+    @Override
+    @Transactional(rollbackFor = IllegalArgumentException.class)
+    public ResponseEntity<?> shipping(OrderActionRequest model) {
+        Order order = orderRepo.getByIdAndStatusIn(model.getId(), List.of(OrderConst.STATUS_PROCESSING));
+        if (order == null) {
+            return ResponseEntity.notFound().build();
+        }
+        order.setStatus(OrderConst.STATUS_SHIPPING);
+        orderRepo.save(order);
+        return ResponseEntity.ok(new AlertResponseRecord(message.getMessage("order.do-shipping"), HttpStatus.OK.value()));
     }
 
     private void rollbackVoucher(Order order) {
