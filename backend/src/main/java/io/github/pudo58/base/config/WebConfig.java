@@ -1,8 +1,10 @@
 package io.github.pudo58.base.config;
 
 import io.github.pudo58.base.entity.Role;
+import io.github.pudo58.base.entity.User;
 import io.github.pudo58.base.override.CustomAuthenticationEntryPoint;
 import io.github.pudo58.base.repo.RoleRepo;
+import io.github.pudo58.base.repo.UserRepo;
 import io.github.pudo58.constant.UserConst;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -17,8 +19,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 @Configuration
 @Slf4j
@@ -26,6 +30,7 @@ import java.util.Locale;
 @EnableWebMvc
 public class WebConfig {
     private final RoleRepo roleRepo;
+    private final UserRepo userRepo;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -48,6 +53,16 @@ public class WebConfig {
                     roleEntity.setName(role);
                     this.roleRepo.save(roleEntity);
                 }
+            }
+
+            User user = new User();
+            user.setUsername("admin");
+            user.setPassword(passwordEncoder().encode("123456"));
+            user.setRoleList(new HashSet<>(roleList));
+            user.setStatus(UserConst.STATUS_ACTIVE);
+
+            if (this.userRepo.findByUsername(user.getUsername()) == null) {
+                this.userRepo.save(user);
             }
         };
     }
