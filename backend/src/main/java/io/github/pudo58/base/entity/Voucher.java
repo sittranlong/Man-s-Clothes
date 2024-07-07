@@ -1,5 +1,6 @@
 package io.github.pudo58.base.entity;
 
+import io.github.pudo58.constant.VoucherConst;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import lombok.Getter;
@@ -25,4 +26,20 @@ public class Voucher extends BaseEntity {
     private String description; // mô tả
     @Column(name = "`type`")
     private String type; // discount, fixed
+
+    public int getDiscountValue(int total) {
+        if (total < this.minTotal) {
+            return 0; // Không đủ điều kiện để sử dụng voucher
+        }
+        int discountValue;
+        if (this.type.equals(VoucherConst.TYPE_FIXED)) {
+            discountValue = this.discount; // Giảm giá cố định
+        } else {
+            discountValue = (int) ((this.discount / 100.0) * total); // Giảm giá phần trăm
+        }
+        if (discountValue > this.maxDiscount) {
+            discountValue = this.maxDiscount; // Giới hạn số tiền giảm tối đa
+        }
+        return discountValue;
+    }
 }

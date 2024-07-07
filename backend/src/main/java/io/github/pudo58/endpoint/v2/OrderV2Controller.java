@@ -22,6 +22,11 @@ public class OrderV2Controller {
         return this.orderService.createOrder(model);
     }
 
+    @PostMapping("/getOrderInfo")
+    public ResponseEntity<?> getOrderInfo(@RequestBody OrderRequest model) throws URISyntaxException, NoSuchAlgorithmException, IOException, InterruptedException {
+        return this.orderService.getOrderInfo(model);
+    }
+
     @GetMapping("/getQrCode/{orderId}")
     public ResponseEntity<?> getQrCode(@PathVariable UUID orderId) throws NoSuchAlgorithmException, IOException, InterruptedException, URISyntaxException {
         return this.orderService.getQrCode(orderId);
@@ -37,4 +42,13 @@ public class OrderV2Controller {
         return this.orderService.getOrder(orderId);
     }
 
+    @PostMapping("/saveContact")
+    public void saveContact(@RequestBody OrderRequest model) {
+        this.orderService.saveContact(model);
+    }
+
+    @GetMapping("/getDefaultContact")
+    public ResponseEntity<?> getDefaultContact() {
+        return this.orderService.getDefaultContact();
+    }
 }

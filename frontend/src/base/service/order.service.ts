@@ -1,74 +1,100 @@
 import axios from "axios";
-import type {Order} from "@/base/model/order.model";
 
 export class OrderService {
     public url = '/v2/order';
     public adminUrl = '/order';
+    private store: any;
 
-    async findBySearchForUser(search: any) {
-        const response = await axios.post(`${this.url}/findBySearchForUser`, search, {
+    constructor(store: any) {
+        this.store = store;
+    }
+
+    async createOrder(model: any) {
+        const response = await axios.post(`${this.url}/create`, model, {
             headers: {
-                Authorization: `Bearer ${localStorage.getItem('token')}`
+                Authorization: `${this.store?.getters.getToken}`
             }
         });
         return response.data;
     }
 
-    async get(id: string): Promise<Order> {
-        const response = await axios.get(`${this.url}/get/${id}`, {
+    async getDefaultContact() {
+        const response = await axios.get(`${this.url}/getDefaultContact`, {
             headers: {
-                Authorization: `Bearer ${localStorage.getItem('token')}`
+                Authorization: `${this.store?.getters.getToken}`
             }
         });
         return response.data;
     }
 
-    async delete(id: string) {
-        await axios.delete(`${this.url}/delete/${id}`, {
+    async getOrderInfo(model: any) {
+        const response = await axios.post(`${this.url}/getOrderInfo`, model, {
             headers: {
-                Authorization: `Bearer ${localStorage.getItem('token')}`
-            }
-        });
-    }
-
-    async findBySearch(search: any) {
-        const response = await axios.post(`${this.adminUrl}/findBySearch`, search, {
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem('token')}`
+                Authorization: `${this.store?.getters.getToken}`
             }
         });
         return response.data;
     }
 
-    async getDetail(id: string): Promise<Order> {
-        const response = await axios.get(`${this.adminUrl}/getDetail/${id}`, {
+    async getQrCode(orderId: any) {
+        const response = await axios.get(`${this.url}/getQrCode/${orderId}`, {
             headers: {
-                Authorization: `Bearer ${localStorage.getItem('token')}`
+                Authorization: `${this.store?.getters.getToken}`
+            }
+        });
+        return response.data;
+    }
+
+    async cancelOrder(model: any) {
+        const response = await axios.post(`${this.url}/cancel`, model, {
+            headers: {
+                Authorization: `${this.store?.getters.getToken}`
+            }
+        });
+        return response.data;
+    }
+
+    async getOrder(orderId: any) {
+        const response = await axios.get(`${this.url}/get/${orderId}`, {
+            headers: {
+                Authorization: `${this.store?.getters.getToken}`
+            }
+        });
+        return response.data;
+    }
+
+//    for admin
+    async findBySearch(model: any) {
+        const response = await axios.post(`${this.adminUrl}/findBySearch`, model, {
+            headers: {
+                Authorization: `${this.store?.getters.getToken}`
+            }
+        });
+        return response.data;
+    }
+
+    async approve(model: any) {
+        const response = await axios.post(`${this.adminUrl}/approve`, model, {
+            headers: {
+                Authorization: `${this.store?.getters.getToken}`
             }
         });
         return response.data;
     }
 
     async reject(model: any) {
-        await axios.post(`${this.adminUrl}/reject`, model, {
+        const response = await axios.post(`${this.adminUrl}/reject`, model, {
             headers: {
-                Authorization: `Bearer ${localStorage.getItem('token')}`
+                Authorization: `${this.store?.getters.getToken}`
             }
         });
+        return response.data;
     }
 
-    async approve(id: string) {
-        await axios.post(`${this.adminUrl}/approve/${id}`, {}, {
+    async shipping(model: any) {
+        const response = await axios.post(`${this.adminUrl}/shipping`, model, {
             headers: {
-                Authorization: `Bearer ${localStorage.getItem('token')}`
-            }
-        });
-    }
-
-    async chart() {
-        const response = await axios.get(`${this.adminUrl}/chart`, {
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem('token')}`
+                Authorization: `${this.store?.getters.getToken}`
             }
         });
         return response.data;

@@ -7,7 +7,7 @@
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
     "build-only": "vite build",
     "build-production": "vite build --mode production",
-    "dev": "vite --mode development --port 3000 --open --host 0.0.0.0",
+    "dev": "vite --mode development --port 3000 --host 0.0.0.0",
     "preview": "vite preview",
     "type-check": "vue-tsc --noEmit -p tsconfig.app.json --composite false"
   },

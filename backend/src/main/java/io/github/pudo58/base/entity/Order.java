@@ -1,5 +1,6 @@
 package io.github.pudo58.base.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.github.pudo58.constant.OrderConst;
 import io.github.pudo58.util.Random;
 import jakarta.persistence.*;
@@ -20,9 +21,11 @@ public class Order extends BaseEntity {
 
     }
     private String code;
+    private String name;
     private Integer total;
     private String status;
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private User user;
 
     @ManyToOne

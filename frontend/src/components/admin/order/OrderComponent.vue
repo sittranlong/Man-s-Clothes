@@ -1,17 +1,17 @@
 <script lang="ts">
 import {defineComponent, inject} from "vue";
-import type {OrderService} from "@/base/service/order.service";
+import {OrderService} from "@/base/service/order.service";
 import {toast} from "vue3-toastify";
 import {Order, OrderStatusText} from "@/base/model/order.model";
 import formatMoney from "@/plugins/utils";
-import {formatDate} from "date-fns";
+import {useRoute, useRouter} from "vue-router";
 
 export default defineComponent({
     name: 'OrderComponent',
     setup() {
         const headers = [
             {title: 'STT', value: 'index', align: 'center'},
-            {title: 'Username', value: 'username', align: 'center'},
+            {title: 'Mã đơn', value: 'code', align: 'center'},
             {title: 'Email', value: 'email', align: 'center'},
             {title: 'Địa chỉ', value: 'address', align: 'center'},
             {title: 'Ngày đặt', value: 'createDate', align: 'center'},
@@ -20,10 +20,16 @@ export default defineComponent({
             {title: 'Hành động', value: 'action', align: 'center'}
         ]
         const ORDER = Order;
+        const formatDate = (date: string) => {
+            return new Date(date).toLocaleString();
+        }
         return {
             headers,
             ORDER,
-            orderService: inject('orderService') as OrderService
+            orderService: inject('orderService') as OrderService,
+            router: useRouter(),
+            route : useRoute(),
+            formatDate
         }
     },
     data() {
@@ -40,6 +46,7 @@ export default defineComponent({
                 size: 10,
                 startDate: '',
                 endDate: '',
+                keyword : ''
             },
             isLoading: false,
         }
@@ -54,11 +61,11 @@ export default defineComponent({
             });
         },
         viewDetail(item: any) {
-            this.$router.push('/admin/order/' + item.id);
+            this.router.push('/admin/order/' + item.id);
         },
         approve(id: string) {
             if (confirm('Bạn có chắc chắn muốn xác nhận đơn hàng này ?')) {
-                this.orderService.approve(id).then(() => {
+                this.orderService.approve({id}).then(() => {
                     this.search();
                     toast.success('Xác nhận đơn hàng thành công');
                 }).catch((error) => {
@@ -76,9 +83,18 @@ export default defineComponent({
                 });
             }
         },
+        shipping(id: any) {
+            if (confirm('Bạn có chắc chắn muốn xác nhận đơn hàng này đã giao hàng ?')) {
+                this.orderService.shipping({id}).then(() => {
+                    this.search();
+                    toast.success('Xác nhận giao hàng thành công');
+                }).catch((error) => {
+                    toast.error(error.response.data.message);
+                });
+            }
+        },
         OrderStatusText,
         formatMoney,
-        formatDate
     },
     created() {
         this.search();
@@ -93,6 +109,11 @@ export default defineComponent({
         </div>
         <div class="container-fluid">
             <v-form>
+                <v-row>
+                   <v-col cols="12">
+                        <v-text-field v-model="searchParams.keyword" label="Tìm kiếm theo mã"></v-text-field>
+                    </v-col>
+                </v-row>
                 <v-row>
                     <v-col cols="6">
                         <v-text-field v-model="searchParams.startDate" label="Từ ngày" type="datetime-local"></v-text-field>
@@ -122,14 +143,11 @@ export default defineComponent({
                 <template v-slot:[`item.index`]="{ index }">
                     {{ index + 1 }}
                 </template>
-                <template v-slot:[`item.username`]="{ item }">
-                    {{ item?.user?.username }}
-                </template>
                 <template v-slot:[`item.createDate`]="{ item }">
-                    {{ formatDate(item?.createDate,'dd/MM/yyyy hh:MM:ss') }}
+                    {{ formatDate(item?.createDate) }}
                 </template>
                 <template v-slot:[`item.totalPayment`]="{ item }">
-                    {{ formatMoney(item?.totalPayment) }}
+                    {{ formatMoney(item?.finalTotal) }}
                 </template>
                 <template v-slot:[`item.email`]="{ item }">
                     {{ item?.user?.email || 'Không có' }}
@@ -144,9 +162,9 @@ export default defineComponent({
                 <template v-slot:[`item.action`]="{ item }">
                     <!--                   use icon-->
                     <v-icon @click="viewDetail(item)">mdi-eye</v-icon>
-                    <v-icon @click="approve(item.id)" v-if="ORDER.STATUS_CONFIRMED === item?.status">mdi-check</v-icon>
-                    <v-icon @click="reject(item.id)" v-if="ORDER.STATUS_CONFIRMED === item?.status">mdi-close</v-icon>
-                </template>
+                    <v-icon @click="approve(item.id)" v-if="ORDER.STATUS_PENDING === item?.status">mdi-check</v-icon>
+                    <v-icon @click="reject(item.id)" v-if="ORDER.STATUS_PENDING === item?.status">mdi-close</v-icon>
+                    <v-icon @click="shipping(item.id)" v-if="ORDER.STATUS_PROCESSING === item?.status">mdi-truck</v-icon></template>
             </v-data-table>
         </div>
     </div>

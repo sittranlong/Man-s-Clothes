@@ -32,6 +32,11 @@ export class ProductService {
         return response.data;
     }
 
+    public async get(id: string) {
+        const response = await axios.get(`${this.url}/get/${id}` );
+        return response.data;
+    }
+
     public async delete(id: string) {
         const response = await axios.delete(`${this.adminUrl}/delete/${id}`, {
             headers: {

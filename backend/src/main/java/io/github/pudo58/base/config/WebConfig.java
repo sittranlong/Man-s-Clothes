@@ -15,6 +15,7 @@ import org.springframework.context.support.ReloadableResourceBundleMessageSource
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import java.util.List;
 import java.util.Locale;
@@ -22,6 +23,7 @@ import java.util.Locale;
 @Configuration
 @Slf4j
 @RequiredArgsConstructor
+@EnableWebMvc
 public class WebConfig {
     private final RoleRepo roleRepo;
 
