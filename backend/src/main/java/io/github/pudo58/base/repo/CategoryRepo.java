@@ -13,7 +13,8 @@ import java.util.UUID;
 @Repository
 public interface CategoryRepo extends JpaRepository<Category, UUID> {
     @Query("""
-    select c from Category c where length(:#{#model.keyword}) = 0 or c.name like %:#{#model.keyword}%
+    select c from Category c where 
+    :#{#model.keyword} is null or length(:#{#model.keyword}) = 0 or c.name like %:#{#model.keyword}%
     """)
     Page<Category> findBySearch(CommonRequest model, Pageable pageable);
 }
