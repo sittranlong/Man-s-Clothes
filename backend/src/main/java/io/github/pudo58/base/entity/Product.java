@@ -13,6 +13,7 @@ import java.util.UUID;
 @Entity
 @Setter
 @Getter
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Product extends BaseEntity {
     private String name;
     @Lob
@@ -35,7 +36,6 @@ public class Product extends BaseEntity {
     private MetaConfig metaConfig;
 
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REMOVE})
-    @JsonIgnore
     private List<ProductDetail> productDetails = new ArrayList<>();
 
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REMOVE})
