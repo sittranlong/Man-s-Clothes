@@ -24,4 +24,6 @@ public interface OrderRepo extends JpaRepository<Order, UUID> {
             and (:#{#model.endDate} is null or o.createDate <= :#{#model.endDate})
             """)
     Page<Order> findBySearch(CommonRequest model, Pageable pageable);
+
+    Page<Order> findByUserId(UUID userId, Pageable pageable);
 }

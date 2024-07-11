@@ -99,4 +99,13 @@ export class OrderService {
         });
         return response.data;
     }
+
+    async findByUser(model: any) {
+        const response = await axios.post(`${this.url}/findByUser`, model, {
+            headers: {
+                Authorization: `${this.store?.getters.getToken}`
+            }
+        });
+        return response.data;
+    }
 }

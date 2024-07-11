@@ -38,4 +38,7 @@ public interface OrderService {
     ResponseEntity<?> reject(OrderActionRequest model);
 
     ResponseEntity<?> shipping(OrderActionRequest model);
+
+    // for user
+    Page<Order> findByUser(CommonRequest model);
 }

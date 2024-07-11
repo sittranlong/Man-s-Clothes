@@ -16,6 +16,8 @@ import io.github.pudo58.util.Message;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -73,7 +75,6 @@ public class OrderServiceImpl implements OrderService {
             List<OrderDetail> orderDetailList = OrderDetail.fromCartList(cartList);
             Order order = new Order();
             order.setUser(user);
-            order.setOrderDetails(orderDetailList);
             order.setAddress(model.getAddress());
             order.setPhone(model.getPhone());
             order.setNote(model.getNote());
@@ -112,7 +113,8 @@ public class OrderServiceImpl implements OrderService {
                 order.setDiscount(0);
             }
             Order orderSaved = this.orderRepo.save(order);
-            this.cartRepo.deleteAll(cartList);
+            orderDetailList.forEach(orderDetail -> orderDetail.setOrder(orderSaved));
+            orderSaved.setOrderDetails(orderDetailList);
             ResponseEntity<?> qrCode = this.getQrCode(orderSaved.getId());
             Map<String, Object> response = Map.of(
                     "order", orderSaved,
@@ -296,6 +298,13 @@ public class OrderServiceImpl implements OrderService {
         order.setStatus(OrderConst.STATUS_SHIPPING);
         orderRepo.save(order);
         return ResponseEntity.ok(new AlertResponseRecord(message.getMessage("order.do-shipping"), HttpStatus.OK.value()));
+    }
+
+    @Override
+    public Page<Order> findByUser(CommonRequest model) {
+        Sort sort = Sort.by(Sort.Order.desc("createDate"));
+        Pageable pageable = model.getPageable(sort);
+        return this.orderRepo.findByUserId(User.getContextId(), pageable);
     }
 
     private void rollbackVoucher(Order order) {

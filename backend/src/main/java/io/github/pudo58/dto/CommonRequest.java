@@ -3,6 +3,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import java.util.Date;
 
@@ -15,5 +16,9 @@ public class CommonRequest extends PageParam {
 
     public Pageable getPageable() {
         return PageRequest.of(getPage(), getSize());
+    }
+
+    public Pageable getPageable(Sort sort) {
+        return PageRequest.of(getPage(), getSize(), sort);
     }
 }

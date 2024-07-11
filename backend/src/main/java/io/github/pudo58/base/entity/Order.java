@@ -1,6 +1,8 @@
 package io.github.pudo58.base.entity;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import io.github.pudo58.constant.OrderConst;
 import io.github.pudo58.util.Random;
 import jakarta.persistence.*;
@@ -15,6 +17,7 @@ import java.util.List;
 @Setter
 @Getter
 @Table(name = "orders")
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Order extends BaseEntity {
 
     public Order() {
@@ -38,7 +41,7 @@ public class Order extends BaseEntity {
     private Integer shippingFee; // phí vận chuyển
     private Integer finalTotal; // tổng tiền cuối cùng
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<OrderDetail> orderDetails = new ArrayList<>();
 
 

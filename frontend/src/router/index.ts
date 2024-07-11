@@ -158,39 +158,86 @@ const router = createRouter({
         {
             path: '/admin/order',
             component: () => import('@/views/pages/admin/order/OrderPage.vue'),
+            meta: {
+                requiresAuth: true,
+                isAdmin: true
+            }
         },
         {
             path: '/admin/order/:id',
             component: () => import('@/views/pages/admin/order/OrderDetailPage.vue'),
+            meta: {
+                requiresAuth: true,
+                isAdmin: true
+            }
         },
         {
             path: '/admin/post',
             component: () => import('@/views/pages/admin/post/PostPage.vue'),
+            meta: {
+                requiresAuth: true,
+                isAdmin: true
+            }
         },
         {
             path: '/admin/post/:id',
             component: () => import('@/views/pages/admin/post/PostDetailPage.vue'),
+            meta: {
+                requiresAuth: true,
+                isAdmin: true
+            }
         },
         {
             path: '/admin/chart',
             component: () => import('@/views/pages/admin/chart/ChartPage.vue'),
+            meta: {
+                requiresAuth: true,
+                isAdmin: true
+            }
         },
         {
             path: '/admin/voucher',
             component: () => import('@/views/pages/admin/voucher/VoucherPage.vue'),
+            meta: {
+                requiresAuth: true,
+                isAdmin: true
+            }
         },
 
         {
             path: '/admin/voucher/:id',
             component: () => import('@/views/pages/admin/voucher/VoucherDetailPage.vue'),
+            meta: {
+                requiresAuth: true,
+                isAdmin: true
+            }
         },
         {
             path: '/checkout',
             component: () => import('@/views/pages/checkout/CheckoutPage.vue'),
+            meta: {
+                requiresAuth: true,
+                isAdmin: false
+            }
+        },
+        {
+            path: '/order/:id',
+            component: () => import('@/views/pages/order/OrderDetailPage.vue'),
+            meta: {
+                requiresAuth: true,
+                isAdmin: false
+            }
+        },{
+            path: '/order',
+            component: () => import('@/views/pages/order/OrderPage.vue'),
+            meta: {
+                requiresAuth: true,
+                isAdmin: false
+            }
         },
         {
             path: '/:pathMatch(.*)*',
-            component: () => import('@/components/NotFound.vue')
+            component: () => import('@/components/NotFound.vue'),
         },
 
     ]
