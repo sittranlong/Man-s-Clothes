@@ -2,6 +2,7 @@
 import {defineComponent, inject} from 'vue'
 import {UserService} from "@/base/service/user.service";
 import {toast} from "vue3-toastify";
+import {useRouter} from "vue-router";
 
 export default defineComponent({
     name: 'UserComponent',
@@ -17,6 +18,7 @@ export default defineComponent({
         return {
             headers,
             userService: inject('userService') as UserService,
+            router : useRouter()
         }
     },
     data() {
@@ -46,7 +48,7 @@ export default defineComponent({
             });
         },
         viewDetail(item: any) {
-            this.$router.push('/admin/user/' + item.id);
+            this.router.push('/admin/user/' + item.id);
         },
         deleteUser(item: any) {
             if (item) {

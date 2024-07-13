@@ -1,6 +1,5 @@
 package io.github.pudo58.base.repo;
 
-import io.github.pudo58.base.entity.Color;
 import io.github.pudo58.base.entity.Order;
 import io.github.pudo58.dto.CommonRequest;
 import org.springframework.data.domain.Page;
@@ -18,10 +17,11 @@ public interface OrderRepo extends JpaRepository<Order, UUID> {
     Order getByIdAndStatusIn(UUID id, Collection<String> status);
 
     @Query("""
-            select o from Order o  where 
+            select o from Order o  where
             (length(:#{#model.keyword}) = 0 or o.code like %:#{#model.keyword}%)
             and (:#{#model.startDate} is null or o.createDate >= :#{#model.startDate})
             and (:#{#model.endDate} is null or o.createDate <= :#{#model.endDate})
+            order by o.createDate desc
             """)
     Page<Order> findBySearch(CommonRequest model, Pageable pageable);
 
