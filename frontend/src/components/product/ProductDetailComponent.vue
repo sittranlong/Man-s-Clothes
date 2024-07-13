@@ -172,12 +172,12 @@ export default defineComponent({
             const payload = {
                 productDetailId: this.productDetailId,
                 quantity: this.userQuantity
-            } as CardRequest;
+            } as any;
             this.cartService.add(payload).then((response) => {
                 toast.success(response);
-            }).catch((error) => {
-                toast.error(error?.response?.data?.message);
-            });
+            }, error => {
+                toast.error(error.response);
+            })
         }
     },
     created() {

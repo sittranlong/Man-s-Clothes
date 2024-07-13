@@ -9,6 +9,7 @@ import io.github.pudo58.base.repo.RoleRepo;
 import io.github.pudo58.base.repo.UserRepo;
 import io.github.pudo58.base.service.core.AbstractService;
 import io.github.pudo58.constant.UserConst;
+import io.github.pudo58.dto.CommonRequest;
 import io.github.pudo58.dto.UserRegisterRequest;
 import io.github.pudo58.record.AlertResponseRecord;
 import io.github.pudo58.record.UserRecord;
@@ -18,15 +19,13 @@ import io.github.pudo58.util.Message;
 import io.github.pudo58.util.Random;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Flux;
 
 import java.io.IOException;
 import java.util.Date;
@@ -120,6 +119,16 @@ public class UserServiceImpl extends AbstractService<User> implements UserServic
             throw new UnauthorizedException(message.getMessage("authentication.not-login"));
         }
         return new UserRecord(user.getId(), user.getUsername(), user.getEmail(), user.getRoleList().stream().map(Role::getName).collect(Collectors.toSet()), user.getStatus());
+    }
+
+    @Override
+    public User getById(UUID id) {
+        return repo.findById(id).orElse(null);
+    }
+
+    @Override
+    public Page<User> findBySearch(CommonRequest model) {
+        return repo.findBySearch(model, model.getPageable());
     }
 
     private void addRole(User user) {

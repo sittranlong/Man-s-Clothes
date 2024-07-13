@@ -10,6 +10,7 @@ export class Order {
     public static readonly STATUS_REFUNDED = "REFUNDED";
     public static readonly STATUS_SHIPPING = "SHIPPING";
     id?: string;
+    createDate?: number;
     code?: string;
     total: number;
     status?: string;
