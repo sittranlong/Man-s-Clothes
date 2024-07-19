@@ -2,6 +2,7 @@ package io.github.pudo58.base.repo;
 
 import io.github.pudo58.base.entity.User;
 import io.github.pudo58.dto.CommonRequest;
+import io.github.pudo58.record.Demo;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -23,7 +24,14 @@ public interface UserRepo extends JpaRepository<User, UUID> {
     User getByUsername(String username);
 
     @Query("""
-            select s from User s where length(:#{#model.keyword}) = 0 or s.username like %:#{#model.keyword}%
+            select s from User s where 
+            length(:#{#model.keyword}) = 0 
+            or s.username like %:#{#model.keyword}%
             """)
     Page<User> findBySearch(CommonRequest model, Pageable pageable);
+
+
+    @Query("select u.username as username, u.password as password1 from User u where u.username = :username")
+
+    List<Demo> findByUsername1(String username);
 }

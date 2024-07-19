@@ -109,7 +109,7 @@
 
 <script lang="ts">
 import {defineComponent, inject} from "vue";
-import {ProductDetail} from "@/base/model/product-detail.model";
+import {ProductDetail} from "@/base/model/product.model";
 import {Product} from "@/base/model/product.model";
 import {ProductService} from "@/base/service/product.service";
 import {CartService} from "@/base/service/cart.service";

@@ -35,6 +35,15 @@ export class UserService {
         return response.data;
     }
 
+    async profile() {
+        const response = await axios.get(`${this.url}/profile`, {
+            headers: {
+                Authorization: `${this.store?.getters.getToken}`
+            }
+        });
+        return response.data;
+    }
+
     async get(id: string) {
         const response = await axios.get(`${this.adminUrl}/get/${id}`, {
             headers: {

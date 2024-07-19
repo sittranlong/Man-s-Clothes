@@ -37,4 +37,12 @@ public class TokenService {
         String key = REDIS_KEY_PREFIX + username;
         redisTemplate.delete(key);
     }
+
+    // cộng 5 phút thời gian cho token
+    public void extendToken(String username, String token) {
+        String key = REDIS_KEY_PREFIX + username;
+        listOperations.remove(key, 0, token);
+        listOperations.leftPush(key, token);
+        redisTemplate.expire(key, expiration, TimeUnit.DAYS);
+    }
 }

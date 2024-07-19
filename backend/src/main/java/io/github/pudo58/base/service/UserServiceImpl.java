@@ -15,6 +15,7 @@ import io.github.pudo58.record.AlertResponseRecord;
 import io.github.pudo58.record.UserRecord;
 import io.github.pudo58.record.UserRegisterRecord;
 import io.github.pudo58.util.EmailSender;
+import io.github.pudo58.util.ImageBase64;
 import io.github.pudo58.util.Message;
 import io.github.pudo58.util.Random;
 import jakarta.mail.MessagingException;
@@ -106,6 +107,26 @@ public class UserServiceImpl extends AbstractService<User> implements UserServic
         emailOtp.setVerified(true);
         emailOtpRepo.save(emailOtp);
         return new AlertResponseRecord(message.getMessage("user.email.authentication-success"), HttpStatus.OK.value());
+    }
+
+    @Override
+    @Transactional(rollbackFor = IllegalArgumentException.class)
+    public User update(UUID uuid, User user) {
+        User oldUser = this.repo.findById(uuid).orElse(null);
+        if (oldUser == null) {
+            throw new IllegalArgumentException(message.getMessage("user.not-exist"));
+        }
+        if (user.getPassword() != null) {
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+        }
+        oldUser.setFullName(user.getFullName());
+        oldUser.setEmail(user.getEmail());
+        oldUser.setAddress(user.getAddress());
+        oldUser.setPhone(user.getPhone());
+        if (user.getAvatarBase64() != null) {
+            oldUser.setAvatar(ImageBase64.setImageBase64(user.getAvatarBase64()));
+        }
+        return this.repo.save(oldUser);
     }
 
     @Override

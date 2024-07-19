@@ -22,7 +22,9 @@ import java.util.*;
 public class User extends BaseEntity implements UserDetails {
     @Column(unique = true)
     private String username;
+    @JsonIgnore
     private String password;
+    private String fullName;
     @Column(unique = true)
     private String email;
     private String phone;
@@ -34,6 +36,8 @@ public class User extends BaseEntity implements UserDetails {
     @Column(columnDefinition = "longblob")
     private byte[] avatar;
 
+    @Transient
+    private String avatarBase64;
     @ManyToMany(targetEntity = Role.class, fetch = FetchType.EAGER)
     @JoinTable(name = "user_role",
         joinColumns = @JoinColumn(name = "user_id"),

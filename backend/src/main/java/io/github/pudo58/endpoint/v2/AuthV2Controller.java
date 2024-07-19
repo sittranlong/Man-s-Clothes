@@ -3,12 +3,14 @@ package io.github.pudo58.endpoint.v2;
 import io.github.pudo58.base.entity.EmailOtp;
 import io.github.pudo58.base.entity.Role;
 import io.github.pudo58.base.entity.User;
+import io.github.pudo58.base.repo.UserRepo;
 import io.github.pudo58.base.service.JwtService;
 import io.github.pudo58.base.service.TokenService;
 import io.github.pudo58.base.service.UserService;
 import io.github.pudo58.dto.AuthRequest;
 import io.github.pudo58.dto.UserRegisterRequest;
 import io.github.pudo58.record.AlertResponseRecord;
+import io.github.pudo58.record.Demo;
 import io.github.pudo58.record.TokenRecord;
 import io.github.pudo58.record.UserRegisterRecord;
 import io.github.pudo58.util.Message;
@@ -16,6 +18,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -36,6 +39,7 @@ import reactor.core.publisher.Flux;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
+import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -43,6 +47,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/v2")
 @RequiredArgsConstructor
+@Lazy
 public class AuthV2Controller {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
@@ -50,8 +55,7 @@ public class AuthV2Controller {
     private final TokenService tokenService;
     private final HttpServletRequest request;
     private final Message message;
-    @Value("classpath:demo.mkv")
-    private Resource resource;
+    private final UserRepo repo;
 
     @PostMapping("/login")
     public TokenRecord authenticateAndGetToken(@RequestBody AuthRequest authRequest) {
@@ -79,6 +83,12 @@ public class AuthV2Controller {
     @PostMapping("/register")
     public UserRegisterRecord register(@NonNull @RequestBody UserRegisterRequest model) throws NoSuchAlgorithmException {
         return userService.register(model);
+    }
+
+    @GetMapping("/get")
+    public Collection<Demo> get(){
+        Collection<Demo> demos = repo.findByUsername1("admin");
+        return demos;
     }
 
     @PostMapping("/verifyEmail")

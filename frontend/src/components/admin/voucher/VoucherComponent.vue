@@ -3,8 +3,8 @@ import {defineComponent, inject} from 'vue'
 import {toast} from "vue3-toastify";
 import {VoucherService} from "@/base/service/voucher.service";
 import {Voucher} from "@/base/model/voucher.model";
-import formatMoney from "@/plugins/utils";
-import {formatDate} from "date-fns";
+import formatMoney, {formatDate} from "@/plugins/utils";
+import {useRouter} from "vue-router";
 
 export default defineComponent({
     name: 'VoucherComponent',
@@ -19,7 +19,8 @@ export default defineComponent({
         ];
         return {
             headers,
-            voucherService: inject('voucherService') as VoucherService
+            voucherService: inject('voucherService') as VoucherService,
+            router: useRouter()
         }
     },
     data() {
@@ -49,7 +50,7 @@ export default defineComponent({
             });
         },
         viewDetail(item: any) {
-            this.$router.push('/admin/voucher/' + item.id);
+            this.router.push('/admin/voucher/' + item.id);
         },
         deleteVoucher(item: any) {
             if (item) {
@@ -63,7 +64,7 @@ export default defineComponent({
         },
         formatMoney,
         redirectNew() {
-            this.$router.push('/admin/voucher/new');
+            this.router.push('/admin/voucher/new');
         },
         calculateDiscount(voucher: Voucher): string {
             if (voucher.discountType === Voucher.DISCOUNT_TYPE_PERCENT) {

@@ -221,6 +221,14 @@ const router = createRouter({
             }
         },
         {
+            path: '/profile',
+            component: () => import('@/views/pages/profile/ProfilePage.vue'),
+            meta: {
+                requiresAuth: true,
+                isAdmin: false
+            }
+        },
+        {
             path: '/order/:id',
             component: () => import('@/views/pages/order/OrderDetailPage.vue'),
             meta: {

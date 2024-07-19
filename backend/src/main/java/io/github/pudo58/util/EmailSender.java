@@ -16,6 +16,7 @@ import java.nio.file.Files;
 
 @Component
 public class EmailSender {
+
     private final JavaMailSender javaMailSender;
     @Value("classpath:static/email_template/register_temp.html")
     private Resource emailOtpTemplate;

@@ -32,7 +32,7 @@ public class OrderAspect {
         }
 
         if (UserConst.STATUS_NON_EMAIL_VERIFIED.equals(user.getStatus())) {
-            throw new IllegalArgumentException("Bạn phải xác thực email để sử dụng chức năng này");
+        //    throw new IllegalArgumentException("Bạn phải xác thực email để sử dụng chức năng này");
         }
     }
 

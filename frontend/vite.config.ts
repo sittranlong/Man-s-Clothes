@@ -19,6 +19,7 @@ export default defineConfig({
         emptyOutDir: true,
         sourcemap: false,
         rollupOptions: {
+            external: ['axios','date-fns','vue-chartjs'],
             output: {
                 manualChunks: {
                     'vuetify': ['vuetify'],
