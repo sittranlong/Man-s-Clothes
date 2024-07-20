@@ -9,9 +9,10 @@ import {BrandService} from "@/base/service/brand.service";
 import {Brand} from "@/base/model/brand.model";
 import {Category} from "@/base/model/category.model";
 import ProductDetailDialogComponent from "@/components/admin/product/ProductDetailDialogComponent.vue";
+import Editor from "@tinymce/tinymce-vue";
 export default defineComponent({
     name: 'ProductDetailComponent',
-    components: {ProductDetailDialogComponent},
+    components: {ProductDetailDialogComponent, Editor},
     setup() {
         return {
             productService: inject('productService') as ProductService,
@@ -123,8 +124,6 @@ export default defineComponent({
             <v-form class="container">
                 <v-text-field v-model="product.name" label="Tên sản phẩm" class="col"
                               :rules="[v => !!v || 'Tên sản phẩm không được để trống']"></v-text-field>
-                <v-text-field v-model="product.description" label="Mô tả" class="col"
-                              :rules="[v => !!v || 'Mô tả không được để trống']"></v-text-field>
                 <v-text-field type="number" v-model="product.price" label="Giá" class="col"
                               :rules="[v => !!v || 'Giá không được để trống']"></v-text-field>
                 <v-text-field type="number" v-model="product.discountPercent" label="Giảm giá" class="col"></v-text-field>
@@ -138,6 +137,21 @@ export default defineComponent({
                            height="100"></v-img>
                 </div>
                 <ProductDetailDialogComponent class="mb-3" :key="product.id" ref="productDetail" :product="product"></ProductDetailDialogComponent>
+                <editor v-model="product.description"
+                        api-key="haqb2cfh7d0ungglu7xiok8bqoxo0qm57s5fzmmmxyhiymif"
+                        :init="{
+                    height: 500,
+                    menubar: false,
+                    plugins: [
+                        'advlist autolink lists link image charmap print preview anchor',
+                        'searchreplace visualblocks code fullscreen',
+                        'insertdatetime media table paste code help wordcount'
+                    ],
+                    toolbar:
+                        'undo redo | formatselect | bold italic backcolor | \
+                        alignleft aligncenter alignright alignjustify | \
+                        bullist numlist outdent indent | removeformat | help'
+                }"></editor>
                 <div class="row my-3">
                     <v-btn class="col" color="secondary" @click="back">Quay lại</v-btn>
                     <v-btn class="col" color="primary" @click="submit">Lưu</v-btn>

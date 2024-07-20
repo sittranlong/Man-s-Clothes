@@ -60,7 +60,8 @@ export default defineComponent({
         </div>
         <div class="d-flex justify-content-center">
             <v-form class="container row col-6">
-                <v-text-field type="number" v-model="size.name" label="Kích cỡ"></v-text-field>
+                <v-text-field v-model="size.name" label="Kích cỡ"></v-text-field>
+                <v-textarea v-model="size.description" label="Mô tả"></v-textarea>
                 <div class="row">
                     <v-btn class="col" color="secondary" @click="back">Quay lại</v-btn>
                     <v-btn class="col" color="primary" @click="submit">Lưu</v-btn>

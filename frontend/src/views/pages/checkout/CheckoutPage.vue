@@ -56,9 +56,16 @@
                 <v-card>
                     <v-card-text>
                         <v-radio-group v-model="orderRequest.paymentMethod" label="Hình thức thanh toán">
-                            <v-radio v-for="method in [PAYMENT_METHOD.QRCODE,PAYMENT_METHOD.COD]" :key="method"
-                                     :label="method.text" :value="method.value">
-                            </v-radio>
+                            <div v-if="isAdmin">
+                                <v-radio v-for="method in [PAYMENT_METHOD.QRCODE,PAYMENT_METHOD.COD, PAYMENT_METHOD.METHOD_AT_COUNTER]" :key="method"
+                                         :label="method.text" :value="method.value">
+                                </v-radio>
+                            </div>
+                            <div v-else>
+                                <v-radio v-for="method in [PAYMENT_METHOD.QRCODE,PAYMENT_METHOD.COD]" :key="method"
+                                         :label="method.text" :value="method.value">
+                                </v-radio>
+                            </div>
                         </v-radio-group>
                         <v-divider></v-divider>
                         <!--                        mã voucher-->
@@ -90,9 +97,16 @@
                         </v-row>
                         <v-divider></v-divider>
                         <v-radio-group v-model="orderRequest.paymentMethod" label="Hình thức thanh toán">
-                            <v-radio v-for="method in [PAYMENT_METHOD.QRCODE,PAYMENT_METHOD.COD]" :key="method"
-                                     :label="method.text" :value="method.value">
-                            </v-radio>
+                            <div v-if="isAdmin">
+                                <v-radio v-for="method in [PAYMENT_METHOD.QRCODE,PAYMENT_METHOD.COD, PAYMENT_METHOD.METHOD_AT_COUNTER]" :key="method"
+                                         :label="method.text" :value="method.value">
+                                </v-radio>
+                            </div>
+                            <div v-else>
+                                <v-radio v-for="method in [PAYMENT_METHOD.QRCODE,PAYMENT_METHOD.COD]" :key="method"
+                                         :label="method.text" :value="method.value">
+                                </v-radio>
+                            </div>
                         </v-radio-group>
                         <v-divider></v-divider>
                         <v-divider></v-divider>
@@ -199,7 +213,6 @@ export default defineComponent({
                     subtitle: 'Xác nhận đơn hàng'
                 }
             ],
-            PAYMENT_METHOD: PaymentMethod,
             route: useRoute(),
             router: useRouter(),
             store: useStore()
@@ -216,10 +229,11 @@ export default defineComponent({
             qrCode: '',
             isShowQRCode: false,
             activeStep: 1,
+            PAYMENT_METHOD: PaymentMethod,
+            isAdmin: false
         }
     },
     methods: {
-
         formatMoney,
         next() {
             this.activeStep++
@@ -273,13 +287,15 @@ export default defineComponent({
         getDefaultContact($event: any) {
             if ($event.target.checked) {
                 this.orderService.getDefaultContact().then((res) => {
-                    this.orderRequest.phone = res.phone;
-                    this.orderRequest.address = res.address;
+                    this.orderRequest.phone = res?.phone;
+                    this.orderRequest.address = res?.address;
+                    this.orderRequest.name = res?.fullName;
                 });
             }
         }
     },
     created() {
+        this.isAdmin = this.store.getters.isAdmin;
         this.init();
     }
 })

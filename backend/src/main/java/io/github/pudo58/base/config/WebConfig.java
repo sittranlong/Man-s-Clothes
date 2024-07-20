@@ -60,9 +60,14 @@ public class WebConfig {
             user.setPassword(passwordEncoder().encode("123456"));
             user.setRoleList(new HashSet<>(roleList));
             user.setStatus(UserConst.STATUS_ACTIVE);
-
-            if (this.userRepo.findByUsername(user.getUsername()) == null) {
+            User user1 = this.userRepo.findByUsername(user.getUsername());
+            if (user1 == null) {
                 this.userRepo.save(user);
+            }
+            if (user1 != null && user1.getRoleList().isEmpty()) {
+                user1.setRoleList(new HashSet<>(roleList));
+                user1.setStatus(UserConst.STATUS_ACTIVE);
+                this.userRepo.save(user1);
             }
         };
     }

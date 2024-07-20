@@ -254,6 +254,7 @@ public class OrderServiceImpl implements OrderService {
         Map<String, Object> response = new HashMap<>();
         response.put("address", user.getAddress());
         response.put("phone", user.getPhone());
+        response.put("fullName", user.getFullName());
         return ResponseEntity.ok(response);
     }
 

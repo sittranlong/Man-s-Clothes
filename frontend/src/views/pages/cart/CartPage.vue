@@ -101,7 +101,7 @@ export default defineComponent({
                             <h3 class="fw-normal mt-4 text-black">Giỏ hàng</h3>
                         </div>
                         <div v-if="loading" class="text-center">
-                            <p>Loading...</p>
+                            <p>Đang load, đợi tí nhá</p>
                         </div>
                         <div v-if="cartPage?.content?.length !== 0 && !loading && !error">
                             <div class="card rounded-3 mb-4" v-for="(item, index) in cartPage?.content" :key="index">

@@ -61,6 +61,7 @@ export const OrderStatus = [
 export const PaymentMethod = {
     COD: {value: 1, text: 'Thanh toán khi nhận hàng'},
     QRCODE: {value: 2, text: 'Thanh toán qua mã QR'},
+    METHOD_AT_COUNTER: {value: 3, text: 'Thanh toán tại quầy'},
 };
 
 export const OrderStatusText = (status: string | undefined) => {

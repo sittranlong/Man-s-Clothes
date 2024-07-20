@@ -26,9 +26,6 @@
                         <div class="d-flex justify-content-between align-items-center"><h4>{{ product?.name }}</h4><span
                             class="heart"><i
                             class='bx bx-heart'></i></span></div>
-                        <div class="mt-2 pr-3 content"><p>
-                            {{ product.description }}
-                        </p></div>
                         <div class="text-start">
                             Giá bán: <span class="fw-bold"><strike>
                             {{
@@ -70,11 +67,10 @@
                         </div>
                         <div class="text-start">
                             Mô tả : <span
-                            class="fw-bold">{{ product.description == null ? 'Không có' : product.description }}</span>
+                            class="fw-bold" v-html="product.description == null ? 'Không có' : product.description"></span>
                         </div>
                         <!--						 chọn số lượng kiểu số-->
                         <div class="text-start">
-                            <span>Chọn số lượng : </span>
                             <div class="d-flex justify-content-start">
                                 <button class="btn btn-outline-dark" @click="userQuantity = userQuantity - 1"
                                         :disabled="userQuantity <= 0">-
