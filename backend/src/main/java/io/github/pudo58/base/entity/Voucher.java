@@ -1,6 +1,8 @@
 package io.github.pudo58.base.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import io.github.pudo58.constant.VoucherConst;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -14,6 +16,7 @@ import java.util.Date;
 @Setter
 @Getter
 @Entity
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Voucher extends BaseEntity {
     private String name; // tên voucher
     private String code; // mã voucher
