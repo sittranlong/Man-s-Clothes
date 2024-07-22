@@ -2,10 +2,13 @@ package io.github.pudo58.dto;
 
 import io.github.pudo58.base.entity.Product;
 import io.github.pudo58.base.entity.Review;
+import io.github.pudo58.constant.ReviewConst;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.UUID;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 @Setter
 @Getter
@@ -32,8 +35,8 @@ public class ProductCard {
         card.setDescription(product.getDescription());
         card.setImage(product.getImage());
         Rating rating = new Rating();
-        rating.setRate(product.getReviews().stream().mapToInt(Review::getRating).average().orElse(0));
-        rating.setCount(product.getReviews().size());
+        rating.setRate(product.getReviews().stream().filter(review -> ReviewConst.STATUS_APPROVED.equals(review.getStatus())).mapToInt(Review::getRating).average().orElse(0));
+        rating.setCount(product.getReviews().stream().filter(review -> ReviewConst.STATUS_APPROVED.equals(review.getStatus())).toList().size());
         card.setRating(rating);
         return card;
     }
