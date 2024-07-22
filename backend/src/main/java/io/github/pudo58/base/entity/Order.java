@@ -19,9 +19,7 @@ import java.util.List;
 @Table(name = "orders")
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Order extends BaseEntity {
-
     public Order() {
-
     }
     private String code;
     private String name;

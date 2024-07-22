@@ -1,5 +1,7 @@
 package io.github.pudo58.base.entity;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import io.github.pudo58.constant.OrderConst;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToOne;
@@ -12,6 +14,7 @@ import java.util.stream.Collectors;
 @Entity
 @Setter
 @Getter
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class OrderDetail extends BaseEntity {
     private Integer price;
     private Integer quantity;
