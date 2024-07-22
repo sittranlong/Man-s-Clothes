@@ -8,6 +8,9 @@ import {SizeService} from "@/base/service/size.service";
 import {WishlistService} from "@/base/service/wishlist.service";
 import {CartService} from "@/base/service/cart.service";
 import {OrderService} from "@/base/service/order.service";
+import {Voucher} from "@/base/model/voucher.model";
+import {VoucherService} from "@/base/service/voucher.service";
+import {ReviewService} from "@/base/service/review.service";
 export const DependencyInjection = {
     install: (app: any,store : any) => {
         app.provide('productService', new ProductService(store))
@@ -20,5 +23,7 @@ export const DependencyInjection = {
         app.provide('wishlistService', new WishlistService(store))
         app.provide('cartService', new CartService(store))
         app.provide('orderService', new OrderService(store))
+        app.provide('voucherService', new VoucherService(store))
+        app.provide('reviewService', new ReviewService(store))
     }
 };

@@ -108,4 +108,13 @@ export class OrderService {
         });
         return response.data;
     }
+
+    async receive(model: any) {
+        const response = await axios.post(`${this.url}/received`, model, {
+            headers: {
+                Authorization: `${this.store?.getters.getToken}`
+            }
+        });
+        return response.data;
+    }
 }

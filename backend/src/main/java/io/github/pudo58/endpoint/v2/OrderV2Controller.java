@@ -3,6 +3,7 @@ package io.github.pudo58.endpoint.v2;
 import io.github.pudo58.base.entity.Order;
 import io.github.pudo58.base.service.OrderService;
 import io.github.pudo58.dto.CommonRequest;
+import io.github.pudo58.dto.OrderActionRequest;
 import io.github.pudo58.dto.OrderRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -59,5 +60,10 @@ public class OrderV2Controller {
     @PostMapping("/findByUser")
     public Page<Order> findByUser(@RequestBody CommonRequest model) {
         return this.orderService.findByUser(model);
+    }
+
+    @PostMapping("/received")
+    public ResponseEntity<?> receivedOrder(@RequestBody OrderActionRequest model) {
+        return this.orderService.receivedOrder(model);
     }
 }

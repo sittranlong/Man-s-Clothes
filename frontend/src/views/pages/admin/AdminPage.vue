@@ -68,6 +68,7 @@ export default defineComponent({
                 {name: 'size', show: false, label: 'Quản lý kích cỡ', routerLink: '/admin/size'},
                 {name: 'product', show: false, label: 'Quản lý sản phẩm', routerLink: '/admin/product'},
                 {name: 'post', show: false, label: 'Quản lý bài viết', routerLink: '/admin/post'},
+                {name: 'review', show: false, label: 'Quản lý đánh giá', routerLink: '/admin/review'},
                 {name: 'voucher', show: false, label: 'Quản lý voucher', routerLink: '/admin/voucher'},
                 {name: 'order', show: false, label: 'Quản lý đơn hàng', routerLink: '/admin/order'},
             ],

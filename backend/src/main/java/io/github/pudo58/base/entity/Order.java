@@ -48,7 +48,6 @@ public class Order extends BaseEntity {
     @Override
     public void prePersist() {
         this.code = Random.randomString(8);
-        this.status = OrderConst.STATUS_PENDING;
     }
 
 }

@@ -4,6 +4,7 @@ import io.github.pudo58.base.entity.Order;
 import io.github.pudo58.base.service.OrderService;
 import io.github.pudo58.dto.CommonRequest;
 import io.github.pudo58.dto.OrderActionRequest;
+import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +12,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/order")
@@ -24,7 +27,7 @@ public class OrderController {
     }
 
     @PostMapping("/approve")
-    public ResponseEntity<?> approve(@RequestBody OrderActionRequest model) {
+    public ResponseEntity<?> approve(@RequestBody OrderActionRequest model) throws MessagingException, IOException {
         return orderService.approve(model);
     }
 

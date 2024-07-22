@@ -45,7 +45,6 @@ export default defineComponent({
                     <div class="product-info">
                         <div class="product-title limit-line-1">{product.value?.name}</div>
                         <div class="product-price">{formatMoney(product.value?.price)}</div>
-                        <div class="product-description limit-line-2">{product.value?.description}</div>
                         <div class="product-rating d-flex">
                             <div>
                                 <rating-component rating={product.value?.rating?.rate}/>

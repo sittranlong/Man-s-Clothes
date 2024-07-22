@@ -27,17 +27,16 @@
                     <td>{{ item.address }}</td>
                     <td>{{ item.phone }}</td>
                     <td>{{ item.name }}</td>
-                    <td>{{ dateTimeFormat(item.created) }}</td>
-                    <td>{{ item.paymentMethod }}</td>
+                    <td>{{ dateTimeFormat(item.createDate) }}</td>
+                    <td>{{ PaymentMethodText(item.paymentMethod) }}</td>
                     <td>
 					<span class="badge"
                           :class="[
                               {'bg-warning': item.status === Order.STATUS_PENDING}
                               ,{'bg-success': item.status === Order.STATUS_PROCESSING
                               || item.status === Order.STATUS_SHIPPING
-                              || item.status === Order.STATUS_COMPLETED},
-                              {'bg-danger': item.status === Order.CANCELLED},
-					      {'bg-danger' : item.status === Order.STATUS_REFUNDED }]">
+                              || item.status === Order.STATUS_COMPLETED},{'bg-danger': item.status === Order.STATUS_CANCELLED},
+					 {'bg-danger' : item.status === Order.STATUS_REFUNDED }]">
 						{{ OrderStatusText(item.status) }}
 					</span>
                     </td>
@@ -50,7 +49,7 @@
                                 @click.prevent="cancel(item.id)">
                             <i class="bi bi-archive-fill"></i>
                         </button>
-                        <button v-if="item.status === Order.STATUS_COMPLETED" title="Đã nhận được hàng" class="btn btn-warning"
+                        <button v-if="item.status === Order.STATUS_SHIPPING" title="Đã nhận được hàng" class="btn btn-warning"
                                 @click.prevent="receivedOrder(item.id)">
                             <i class="bi bi-bag-check"></i>
                         </button>
@@ -75,6 +74,7 @@
                             <option value="20">20</option>
                             <option value="50">50</option>
                         </select>
+
                         <div class="d-flex">
                             <button class="btn btn-primary" @click.prevent="prePage()">
                                 <i class="bi bi-arrow-left"></i>
@@ -116,7 +116,7 @@
 
 <script lang="ts">
 import {defineComponent, inject} from "vue";
-import {Order, OrderStatusText} from "@/base/model/order.model";
+import {Order, OrderStatusText, PaymentMethodText} from "@/base/model/order.model";
 import {OrderService} from "@/base/service/order.service";
 import {toast} from "vue3-toastify"
 import HeaderComponent from "@/components/header/HeaderComponent.vue";
@@ -156,7 +156,7 @@ export default defineComponent({
                 this.orderPage = res;
             });
         },
-        dateTimeFormat(date: Date) {
+        dateTimeFormat(date: number) {
             return new Date(date).toLocaleString();
         },
         prePage() {
@@ -179,13 +179,14 @@ export default defineComponent({
         },
         cancel(id: number) {
             if(confirm("Bạn có chắc chắn muốn hủy đơn hàng này?")){
-                this.orderService.cancelOrder(id).then(res => {
+                this.orderService.cancelOrder({orderId : id}).then(res => {
                     if (res) {
                         this.findAll();
                     }
                 });
             }
         },
+        PaymentMethodText,
         returnOrder(id: number) {
             if(confirm("Bạn có chắc chắn muốn trả lại đơn hàng này?")){
                 // this.orderService.(id,this.note).then(res => {
@@ -197,11 +198,10 @@ export default defineComponent({
         },
         receivedOrder(id: number) {
             if(confirm("Bạn có chắc chắn muốn xác nhận đã nhận hàng?")){
-                // this.orderService.receiveOrder(id).then(res => {
-                //     if (res) {
-                //         this.findAll();
-                //     }
-                // });
+                this.orderService.receive({id}).then(res => {
+                    toast.success(res?.message);
+                    this.findAll();
+                });
             }
         }
     },

@@ -4,10 +4,9 @@ import io.github.pudo58.base.entity.Order;
 import io.github.pudo58.dto.CommonRequest;
 import io.github.pudo58.dto.OrderActionRequest;
 import io.github.pudo58.dto.OrderRequest;
-import io.github.pudo58.record.AlertResponseRecord;
+import jakarta.mail.MessagingException;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -33,11 +32,13 @@ public interface OrderService {
 //    for admin
     Page<Order> findBySearch(CommonRequest model);
 
-    ResponseEntity<?> approve(OrderActionRequest model);
+    ResponseEntity<?> approve(OrderActionRequest model) throws MessagingException, IOException;
 
     ResponseEntity<?> reject(OrderActionRequest model);
 
     ResponseEntity<?> shipping(OrderActionRequest model);
+
+    ResponseEntity<?> receivedOrder(OrderActionRequest model);
 
     // for user
     Page<Order> findByUser(CommonRequest model);

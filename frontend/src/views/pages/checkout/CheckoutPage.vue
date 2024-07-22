@@ -42,7 +42,7 @@
                                 </v-col>
                                 <v-col cols="12" md="6">
                                     <v-text-field v-model="orderRequest.phone" label="Số điện thoại (*)"
-                                                  :rules="[v => !!v || 'Số điện thoại không được để trống']"
+                                                  :rules="[v => rulePhone(v)]"
                                                   required></v-text-field>
                                 </v-col>
                             </v-row>
@@ -139,14 +139,14 @@
                             </tr>
                             <tr>
                                 <td colspan="3">Giảm giá (3)</td>
-                                <td class="font-weight-bold">{{ formatMoney(orderInfo.voucher?.discountValue) }}</td>
+                                <td class="font-weight-bold">{{ formatMoney(orderInfo?.voucherDiscount) }}</td>
                             </tr>
                             <tr>
                                 <td colspan="3">Thành tiền (4 = 1 + 2 - 3)</td>
                                 <td class="font-weight-bold">{{ formatMoney(orderInfo?.finalTotal) }}</td>
                             </tr>
                             <tr>
-                                <td colspan="4" v-if="orderRequest.paymentMethod === PAYMENT_METHOD.QRCODE.value">
+                                <td colspan="4" v-if="orderRequest.paymentMethod !== PAYMENT_METHOD.COD.value">
                                     <v-img :src="orderInfo?.qrCode?.data?.qrDataURL" alt="QR Code" width="250"
                                            height="250"></v-img>
                                 </td>
@@ -268,6 +268,7 @@ export default defineComponent({
             this.orderService.createOrder(this.orderRequest).then((res) => {
                 localStorage.setItem('orderId', res.order?.id);
                 toast.success('Đặt hàng thành công');
+                this.router.push('/order');
             }, (error) => {
                 toast.error(error.response.data.message);
             });
@@ -292,6 +293,12 @@ export default defineComponent({
                     this.orderRequest.name = res?.fullName;
                 });
             }
+        },
+        rulePhone(v: any) {
+            if (!v) return 'Số điện thoại không được để trống';
+            if (!/^\d{10,11}$/.test(v)) return 'Số điện thoại không hợp lệ';
+            if (!/^(03|07|08|09|01[2|6|8|9])+([0-9]{8})$/.test(v)) return 'Số điện thoại không hợp lệ';
+            return true;
         }
     },
     created() {

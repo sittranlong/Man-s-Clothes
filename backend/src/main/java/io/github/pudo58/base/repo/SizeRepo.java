@@ -14,6 +14,7 @@ import java.util.UUID;
 public interface SizeRepo extends JpaRepository<Size, UUID> {
     @Query("""
             select s from Size s where length(:#{#model.keyword}) = 0 or s.name like %:#{#model.keyword}%
+            order by s.createDate desc
             """)
     Page<Size> findBySearch(CommonRequest model, Pageable pageable);
 }

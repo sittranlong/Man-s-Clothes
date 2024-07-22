@@ -6,13 +6,16 @@ import io.github.pudo58.base.repo.CartRepo;
 import io.github.pudo58.base.repo.OrderRepo;
 import io.github.pudo58.base.repo.VoucherRepo;
 import io.github.pudo58.constant.OrderConst;
+import io.github.pudo58.constant.PaymentConst;
 import io.github.pudo58.constant.VoucherConst;
 import io.github.pudo58.dto.CommonRequest;
 import io.github.pudo58.dto.Contact;
 import io.github.pudo58.dto.OrderActionRequest;
 import io.github.pudo58.dto.OrderRequest;
 import io.github.pudo58.record.AlertResponseRecord;
+import io.github.pudo58.util.EmailSender;
 import io.github.pudo58.util.Message;
+import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -35,6 +38,8 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 @Service
 @RequiredArgsConstructor
@@ -44,6 +49,7 @@ public class OrderServiceImpl implements OrderService {
     private final VoucherRepo voucherRepo;
     private final Message message;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final EmailSender emailSender;
 
     @Value("${vietqr.url}")
     private String vietQRURL;
@@ -81,7 +87,14 @@ public class OrderServiceImpl implements OrderService {
             order.setName(model.getName());
             order.setPaymentMethod(model.getPaymentMethod());
             order.setTotal(cartList.stream().mapToInt(cart -> cart.getProductDetail().getProduct().getPrice() * cart.getQuantity()).sum());
-            int shippingFee = order.getTotal() > 1_000_000 ? 0 : this.shippingFee;
+            int shippingFee;
+            if (PaymentConst.METHOD_AT_COUNTER.equals(model.getPaymentMethod())) {
+                shippingFee = 0;
+                order.setStatus(OrderConst.STATUS_COMPLETED);
+            } else {
+                shippingFee = order.getTotal() > 1_000_000 ? 0 : this.shippingFee;
+                order.setStatus(OrderConst.STATUS_PENDING);
+            }
             order.setFinalTotal(order.getTotal());
             order.setShippingFee(shippingFee);
             Voucher voucher = voucherRepo.findByCode(model.getVoucherCode()).orElse(null);
@@ -94,8 +107,13 @@ public class OrderServiceImpl implements OrderService {
                 if (currentDate.before(voucher.getStartDate()) || currentDate.after(voucher.getEndDate())) {
                     return ResponseEntity.badRequest().body(new AlertResponseRecord(message.getMessage("voucher.invalid"), HttpStatus.BAD_REQUEST.value()));
                 }
-                if (voucher.getMaxUsage() != null && voucher.getUsage() >= voucher.getMaxUsage()) {
-                    return ResponseEntity.badRequest().body(new AlertResponseRecord(message.getMessage("voucher.expired"), HttpStatus.BAD_REQUEST.value()));
+                if (voucher.getMaxUsage() != null) {
+                    if (voucher.getUsage() == null) {
+                        voucher.setUsage(0);
+                    }
+                    if (voucher.getMaxUsage() != null && voucher.getUsage() >= voucher.getMaxUsage()) {
+                        return ResponseEntity.badRequest().body(new AlertResponseRecord(message.getMessage("voucher.expired"), HttpStatus.BAD_REQUEST.value()));
+                    }
                 }
                 if (voucher.getMinTotal() != null && order.getFinalTotal() < voucher.getMinTotal()) {
                     return ResponseEntity.badRequest().body(new AlertResponseRecord(message.getMessage("voucher.invalid"), HttpStatus.BAD_REQUEST.value()));
@@ -117,8 +135,11 @@ public class OrderServiceImpl implements OrderService {
             orderSaved.setOrderDetails(orderDetailList);
             ResponseEntity<?> qrCode = this.getQrCode(orderSaved.getId());
             Map<String, Object> response = Map.of(
-                    "order", orderSaved,
-                    "qrCode", Objects.requireNonNull(qrCode.getBody())
+                    "total", order.getTotal(),
+                    "shippingFee", shippingFee,
+                    "finalTotal", order.getFinalTotal(),
+                    "cartList", cartList,
+                    "qrCode", Objects.nonNull(qrCode.getBody())
             );
             return ResponseEntity.ok(response);
         }
@@ -132,7 +153,12 @@ public class OrderServiceImpl implements OrderService {
             return ResponseEntity.badRequest().body(new AlertResponseRecord(message.getMessage("cart.empty"), HttpStatus.BAD_REQUEST.value()));
         } else {
             int total = cartList.stream().mapToInt(cart -> cart.getProductDetail().getProduct().getPrice() * cart.getQuantity()).sum();
-            int shippingFee = total > 1_000_000 ? 0 : this.shippingFee;
+            int shippingFee;
+            if (PaymentConst.METHOD_AT_COUNTER.equals(model.getPaymentMethod())) {
+                shippingFee = 0;
+            } else {
+                shippingFee = total > 1_000_000 ? 0 : this.shippingFee;
+            }
             int finalTotal = total + shippingFee;
             int voucherDiscount = 0;
             if (model.getVoucherCode() != null) {
@@ -146,8 +172,13 @@ public class OrderServiceImpl implements OrderService {
                     if (currentDate.before(voucher.getStartDate()) || currentDate.after(voucher.getEndDate())) {
                         return ResponseEntity.badRequest().body(new AlertResponseRecord(message.getMessage("voucher.invalid"), HttpStatus.BAD_REQUEST.value()));
                     }
-                    if (voucher.getMaxUsage() != null && voucher.getUsage() >= voucher.getMaxUsage()) {
-                        return ResponseEntity.badRequest().body(new AlertResponseRecord(message.getMessage("voucher.expired"), HttpStatus.BAD_REQUEST.value()));
+                    if (voucher.getMaxUsage() != null) {
+                        if (voucher.getUsage() == null) {
+                            voucher.setUsage(0);
+                        }
+                        if (voucher.getMaxUsage() != null && voucher.getUsage() >= voucher.getMaxUsage()) {
+                            return ResponseEntity.badRequest().body(new AlertResponseRecord(message.getMessage("voucher.expired"), HttpStatus.BAD_REQUEST.value()));
+                        }
                     }
                     if (voucher.getMinTotal() != null && finalTotal < voucher.getMinTotal()) {
                         return ResponseEntity.badRequest().body(new AlertResponseRecord(message.getMessage("voucher.invalid"), HttpStatus.BAD_REQUEST.value()));
@@ -243,6 +274,11 @@ public class OrderServiceImpl implements OrderService {
             return ResponseEntity.notFound().build();
         }
         order.setStatus(OrderConst.STATUS_PROCESSING);
+        order.getOrderDetails().forEach(orderDetail -> {
+            ProductDetail productDetail = orderDetail.getProductDetail();
+            productDetail.setQuantity(productDetail.getQuantity() - orderDetail.getQuantity());
+        });
+
         orderRepo.save(order);
         return ResponseEntity.ok(new AlertResponseRecord(message.getMessage("order.approve-success"), HttpStatus.OK.value()));
     }
@@ -265,13 +301,29 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional(rollbackFor = IllegalArgumentException.class)
-    public ResponseEntity<?> approve(OrderActionRequest model) {
+    public ResponseEntity<?> approve(OrderActionRequest model) throws MessagingException, IOException {
         Order order = orderRepo.getByIdAndStatusIn(model.getId(), List.of(OrderConst.STATUS_PENDING, OrderConst.STATUS_PROCESSING));
         if (order == null) {
             return ResponseEntity.notFound().build();
         }
+        order.getOrderDetails().forEach(orderDetail -> {
+            ProductDetail productDetail = orderDetail.getProductDetail();
+            productDetail.setQuantity(productDetail.getQuantity() - orderDetail.getQuantity());
+        });
         order.setStatus(OrderConst.STATUS_PROCESSING);
-        orderRepo.save(order);
+        if (order.getUser().getEmail() != null) {
+            Order order1 = orderRepo.save(order);
+            Executor executor = Executors.newSingleThreadExecutor();
+            executor.execute(() -> {
+                try {
+                    emailSender.sendOrderAlert(order1);
+                } catch (IOException | MessagingException e) {
+                    e.printStackTrace();
+                }
+            });
+        } else {
+            orderRepo.save(order);
+        }
         return ResponseEntity.ok(new AlertResponseRecord(message.getMessage("order.approve-success"), HttpStatus.OK.value()));
     }
 
@@ -299,6 +351,18 @@ public class OrderServiceImpl implements OrderService {
         order.setStatus(OrderConst.STATUS_SHIPPING);
         orderRepo.save(order);
         return ResponseEntity.ok(new AlertResponseRecord(message.getMessage("order.do-shipping"), HttpStatus.OK.value()));
+    }
+
+    @Override
+    @Transactional(rollbackFor = IllegalArgumentException.class)
+    public ResponseEntity<?> receivedOrder(OrderActionRequest model) {
+        Order order = orderRepo.getByIdAndStatusIn(model.getId(), List.of(OrderConst.STATUS_SHIPPING));
+        if (order == null) {
+            return ResponseEntity.notFound().build();
+        }
+        order.setStatus(OrderConst.STATUS_COMPLETED);
+        orderRepo.save(order);
+        return ResponseEntity.ok(new AlertResponseRecord(message.getMessage("order.received"), HttpStatus.OK.value()));
     }
 
     @Override

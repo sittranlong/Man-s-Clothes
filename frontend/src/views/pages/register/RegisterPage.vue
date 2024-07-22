@@ -4,13 +4,15 @@ import FooterComponent from "@/components/footer/FooterComponent.vue";
 import {AuthService} from "@/base/service/auth.service";
 import LoadingComponent from "@/components/loading/LoadingComponent.vue";
 import {toast} from "vue3-toastify";
+import {useRoute, useRouter} from "vue-router";
 
 export default defineComponent({
     name: "RegisterPage",
     components: {LoadingComponent, FooterComponent},
     setup() {
         return {
-            authService: inject('authService') as AuthService
+            authService: inject('authService') as AuthService,
+            router : useRouter()
         }
     },
     data: () => ({
@@ -48,6 +50,7 @@ export default defineComponent({
             this.otpRequest.email = this.form.email
             this.authService.verifyEmail(this.otpRequest).then((response) => {
                 toast.success(response.data.message)
+                this.router.push('/login')
             }).catch((error) => {
                 toast.error(error.response.data.message)
             }).finally(() => {

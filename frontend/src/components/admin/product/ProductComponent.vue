@@ -55,10 +55,10 @@ export default defineComponent({
         },
         deleteProduct(item: any) {
             if (item) {
-                if (confirm('Bạn có chắc chắn muốn xóa danh mục này ?')) {
+                if (confirm('Bạn có chắc chắn muốn xóa sản phẩm này ?')) {
                     this.productService.delete(item?.id).then(() => {
                         this.search();
-                        toast.success('Xóa danh mục thành công');
+                        toast.success('Xóa sản phẩm thành công');
                     });
                 }
             }

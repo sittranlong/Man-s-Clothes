@@ -21,7 +21,18 @@
                                 <p><b>Số điện thoại:</b> {{ order?.phone }}</p>
                             </div>
                             <div class="col-md-6">
-                                <p><b>Ngày đặt hàng:</b> {{ new Date(order?.createDate) }}</p>
+                                <p><b>Ngày đặt hàng:</b> {{ formatDate(order?.createDate) }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><b>Trạng thái:</b> <span class="badge"
+                                                            :class="[
+                              {'bg-warning': order?.status === Order.STATUS_PENDING}
+                              ,{'bg-success': order?.status === Order.STATUS_PROCESSING
+                              || order?.status === Order.STATUS_SHIPPING
+                              || order?.status === Order.STATUS_COMPLETED},
+                              {'bg-danger': order?.status === Order.STATUS_CANCELLED},{'bg-danger' : order?.status === Order.STATUS_REFUNDED }]">
+						{{ OrderStatusText(order?.status) }}
+					</span></p>
                             </div>
                         </div>
                     </v-card-text>
@@ -57,6 +68,10 @@
                         <td>{{ formatMoney(Number(order?.shippingFee)) }}</td>
                     </tr>
                     <tr>
+                        <td colspan="3" class="text-start">Voucher giảm giá</td>
+                        <td>{{ formatMoney(Number(order?.discount)) }}</td>
+                    </tr>
+                    <tr>
                         <td colspan="3" class="text-start">Tổng tiền</td>
                         <td>{{ formatMoney(Number(order?.finalTotal)) }}</td>
                     </tr>
@@ -71,12 +86,12 @@
 <script lang="ts">
 import {defineComponent, inject} from "vue";
 import {OrderService} from "@/base/service/order.service";
-import {Order} from "@/base/model/order.model";
+import {Order, OrderStatusText} from "@/base/model/order.model";
 import {Product} from "@/base/model/product.model";
 import {useRoute, useRouter} from "vue-router";
 import HeaderComponent from "@/components/header/HeaderComponent.vue";
 import FooterComponent from "@/components/footer/FooterComponent.vue";
-import formatMoney from "@/plugins/utils";
+import formatMoney, {formatDate} from "@/plugins/utils";
 
 export default defineComponent({
     name: "OrderDetailComponent",
@@ -86,6 +101,7 @@ export default defineComponent({
             router: useRouter(),
             route: useRoute(),
             orderService: inject('orderService') as OrderService,
+            OrderStatusText
         }
     },
     data() {
@@ -104,7 +120,8 @@ export default defineComponent({
                 console.log(err);
             })
         },
-        formatMoney
+        formatMoney,
+        formatDate
     },
     created() {
         this.initOrder();

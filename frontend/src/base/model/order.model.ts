@@ -71,3 +71,11 @@ export const OrderStatusText = (status: string | undefined) => {
     }
     return '';
 };
+
+export const PaymentMethodText = (method: number | undefined) => {
+    if (method) {
+        const paymentMethod = Object.values(PaymentMethod).find(item => item.value === method);
+        return paymentMethod ? paymentMethod.text : '';
+    }
+    return '';
+}

@@ -1,8 +1,11 @@
 package io.github.pudo58.util;
 
 import io.github.pudo58.base.entity.EmailOtp;
+import io.github.pudo58.base.entity.Order;
+import io.github.pudo58.base.entity.OrderDetail;
 import io.github.pudo58.base.entity.User;
 import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -57,6 +60,29 @@ public class EmailSender {
         MimeMessageHelper helper = new MimeMessageHelper(javaMailSender.createMimeMessage(), StandardCharsets.UTF_8.name());
         helper.setTo(user.getEmail());
         helper.setSubject("Nhắc nhở xác thực email");
+        helper.setText(content, true);
+        javaMailSender.send(helper.getMimeMessage());
+    }
+
+    public void sendOrderAlert(Order order) throws IOException, MessagingException {
+        File file = orderTemplate.getFile();
+        String content = Files.readString(file.toPath());
+        content = content.replace("{{fullName}}", order.getUser().getFullName());
+        StringBuilder orderDetails = new StringBuilder();
+        for (OrderDetail detail : order.getOrderDetails()) {
+            orderDetails.append("<tr>")
+                    .append("<td>").append(detail.getProductDetail().getProduct().getName()).append("</td>")
+                    .append("<td>").append(detail.getQuantity()).append("</td>")
+                    .append("<td>").append(detail.getPrice()).append("</td>")
+                    .append("<td>").append(detail.getTotal()).append("</td>")
+                    .append("</tr>");
+        }
+        content = content.replace("{{orderDetails}}", orderDetails.toString());
+        content = content.replace("{{finalTotal}}", String.valueOf(order.getFinalTotal()));
+        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, StandardCharsets.UTF_8.name());
+        helper.setTo(order.getUser().getEmail());
+        helper.setSubject("Xác nhận Đơn hàng");
         helper.setText(content, true);
         javaMailSender.send(helper.getMimeMessage());
     }

@@ -203,10 +203,25 @@ const router = createRouter({
                 isAdmin: true
             }
         },
-
         {
             path: '/admin/voucher/:id',
             component: () => import('@/views/pages/admin/voucher/VoucherDetailPage.vue'),
+            meta: {
+                requiresAuth: true,
+                isAdmin: true
+            }
+        },
+        {
+            path: '/admin/review',
+            component: () => import('@/views/pages/admin/review/ReviewPage.vue'),
+            meta: {
+                requiresAuth: true,
+                isAdmin: true
+            }
+        },
+        {
+            path: '/admin/review/:id',
+            component: () => import('@/views/pages/admin/review/ReviewDetailPage.vue'),
             meta: {
                 requiresAuth: true,
                 isAdmin: true

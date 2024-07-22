@@ -67,10 +67,10 @@ public class ProductServiceImpl extends AbstractService<Product> implements Prod
 
     @Override
     public void deleteById(UUID uuid) {
-        Product product = findById(uuid);
+        Product product = productRepo.findById(uuid).orElse(null);
         if (product != null) {
             product.setStatus(ProductConst.STATUS_INACTIVE);
-            this.update(uuid, product);
+            this.productRepo.save(product);
         }
     }
 

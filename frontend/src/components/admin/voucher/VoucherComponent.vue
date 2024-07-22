@@ -12,9 +12,9 @@ export default defineComponent({
         const headers = [
             {title: 'STT', value: 'index'},
             {title: 'Mã voucher', value: 'code'},
-            {title: 'Giảm giá', value: 'discount'},
             {title: 'Hạn sử dụng', value: 'expiryDate'},
-            {title: 'Số lượng', value: 'quantity', align: 'center'},
+            {title: 'Số lượng', value: 'maxUsage', align: 'center'},
+            {title: 'Loại', value: 'type'},
             {title: 'Hành động', value: 'action', sortable: false},
         ];
         return {
@@ -67,10 +67,10 @@ export default defineComponent({
             this.router.push('/admin/voucher/new');
         },
         calculateDiscount(voucher: Voucher): string {
-            if (voucher.discountType === Voucher.DISCOUNT_TYPE_PERCENT) {
-                return `${voucher.discountValue}%`;
+            if (voucher.type === Voucher.DISCOUNT_TYPE_PERCENT) {
+                return `${voucher.discount}%`;
             } else {
-                return formatMoney(voucher.discountValue);
+                return formatMoney(voucher.discount);
             }
         }, formatDate
     },
