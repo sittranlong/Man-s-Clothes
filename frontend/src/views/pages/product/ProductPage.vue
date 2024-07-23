@@ -132,7 +132,7 @@ export default defineComponent({
                 size: 0,
             } as any,
             params: {
-                page: 0,
+                page: 1,
                 size: 20,
                 keyword: '',
                 categoryIdList: [] as string[],

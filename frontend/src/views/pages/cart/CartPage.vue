@@ -35,7 +35,7 @@ export default defineComponent({
                 empty: true,
             } as any,
             params: {
-                page: 0,
+                page: 1,
                 size: 10,
             },
             loading: false,

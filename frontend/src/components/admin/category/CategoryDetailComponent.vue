@@ -18,17 +18,11 @@ export default defineComponent({
         return {
             category: new Category(),
             id: '' as string,
-            categoryList: [] as Category[]
         }
     },
     methods: {
         back() {
             this.router.push('/admin/category');
-        },
-        loadCategoryList() {
-            this.categoryService.findAll().then((data: Category[]) => {
-                this.categoryList = data;
-            });
         },
         submit() {
             if (this.category.id) {
@@ -49,7 +43,6 @@ export default defineComponent({
         this.categoryService.get(this.id).then((data: Category) => {
             this.category = data;
         });
-        this.loadCategoryList();
     }
 })
 </script>
@@ -61,12 +54,7 @@ export default defineComponent({
         <div class="d-flex justify-content-center">
             <v-form class="container row col-6">
                 <v-text-field v-model="category.name" label="Tên danh mục"></v-text-field>
-                <v-select v-model="category.parentId"
-                          :items="categoryList"
-                          label="Danh mục cha"
-                          item-title="name"
-                          item-value="id"
-                ></v-select>
+                <v-textarea v-model="category.description" label="Mô tả"></v-textarea>
                 <div class="row">
                     <v-btn class="col" color="secondary" @click="back">Quay lại</v-btn>
                     <v-btn class="col" color="primary" @click="submit">Lưu</v-btn>

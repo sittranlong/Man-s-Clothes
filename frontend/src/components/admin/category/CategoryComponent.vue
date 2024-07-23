@@ -2,6 +2,7 @@
 import {defineComponent, inject} from 'vue'
 import {toast} from "vue3-toastify";
 import {CategoryService} from "@/base/service/category.service";
+import {useRouter} from "vue-router";
 
 export default defineComponent({
     name: 'CategoryComponent',
@@ -9,12 +10,13 @@ export default defineComponent({
         const headers = [
             {title: 'STT', value: 'index'},
             {title: 'Tên danh mục', value: 'name'},
-            {title: 'Danh mục cha', value: 'parent'},
+            {title: 'Mô tả', value: 'description'},
             {title: 'Hành động', value: 'action'}
         ];
         return {
             headers,
             categoryService: inject('categoryService') as CategoryService,
+            router : useRouter()
         }
     },
     data() {
@@ -27,7 +29,7 @@ export default defineComponent({
                 size: 0,
             } as any,
             searchParams: {
-                page: 0,
+                page: 1,
                 size: 10,
                 keyword: '',
             },
@@ -44,7 +46,7 @@ export default defineComponent({
             });
         },
         viewDetail(item: any) {
-            this.$router.push('/admin/category/' + item.id);
+            this.router.push('/admin/category/' + item.id);
         },
         deleteCategory(item: any) {
             if (item) {
@@ -75,22 +77,20 @@ export default defineComponent({
             @change="search"
             single-line
         ></v-text-field>
-        <v-btn color="primary" @click="() => $router.push('/admin/category/new')">Thêm mới</v-btn>
-        <v-data-table
+        <v-btn color="primary" @click="() => router.push('/admin/category/new')">Thêm mới</v-btn>
+        <v-data-table-server
             :headers="headers"
             :items="categoryPage.content"
             :loading="isLoading"
+            v-model:items-per-page="searchParams.size"
+            v-model:page="searchParams.page"
+            :items-length="categoryPage.totalElements"
             :items-per-page="searchParams.size"
-            :on-update:items-per-page="search"
-            :page="searchParams.page"
-            :on-update:page="search"
-            :search="searchParams.keyword"
-            :total-items="categoryPage.totalElements">
+            @update:itemsPerPage="search"
+            @update:page="search"
+            :search="searchParams.keyword">
             <template v-slot:[`item.index`]="{index}">
                 <td>{{index + 1}}</td>
-            </template>
-            <template v-slot:[`item.parent`]="{item}">
-                <td>{{item.parent?.name}}</td>
             </template>
             <template v-slot:[`item.action`]="{item}">
                 <td>
@@ -98,7 +98,7 @@ export default defineComponent({
                     <v-icon left @click="deleteCategory(item)">mdi-delete</v-icon>
                 </td>
             </template>
-        </v-data-table>
+        </v-data-table-server>
     </div>
 </template>
 <style scoped>

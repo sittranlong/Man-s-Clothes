@@ -144,7 +144,7 @@ export default defineComponent({
                 size: 0,
             } as any,
             idCurrent: 0,
-            page: 0,
+            page: 1,
             size: 10,
             Order : Order,
             note : "" as string

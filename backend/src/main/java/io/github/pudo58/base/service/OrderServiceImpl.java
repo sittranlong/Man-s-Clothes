@@ -91,6 +91,10 @@ public class OrderServiceImpl implements OrderService {
             if (PaymentConst.METHOD_AT_COUNTER.equals(model.getPaymentMethod())) {
                 shippingFee = 0;
                 order.setStatus(OrderConst.STATUS_COMPLETED);
+                orderDetailList.forEach(orderDetail -> {
+                    ProductDetail productDetail = orderDetail.getProductDetail();
+                    productDetail.setQuantity(productDetail.getQuantity() - orderDetail.getQuantity());
+                });
             } else {
                 shippingFee = order.getTotal() > 1_000_000 ? 0 : this.shippingFee;
                 order.setStatus(OrderConst.STATUS_PENDING);

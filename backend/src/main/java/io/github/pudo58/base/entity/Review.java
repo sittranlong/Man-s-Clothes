@@ -2,6 +2,7 @@ package io.github.pudo58.base.entity;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -12,7 +13,6 @@ import java.util.UUID;
 @Entity
 @Setter
 @Getter
-@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Review extends BaseEntity {
     private String content;
     private Integer rating;
@@ -24,8 +24,10 @@ public class Review extends BaseEntity {
     private String imageBase64;
 
     @ManyToOne
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private User user;
     @ManyToOne
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Product product;
     @Transient
     private UUID productId;

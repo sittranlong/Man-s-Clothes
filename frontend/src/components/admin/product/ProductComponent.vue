@@ -34,7 +34,7 @@ export default defineComponent({
                 size: 0,
             } as any,
             searchParams: {
-                page: 0,
+                page: 1,
                 size: 10,
                 keyword: '',
             },
@@ -89,16 +89,16 @@ export default defineComponent({
             single-line
         ></v-text-field>
         <v-btn color="primary" @click="() => router.push('/admin/product/new')">Thêm mới</v-btn>
-        <v-data-table
+        <v-data-table-server
             :headers="headers"
             :items="productPage.content"
             :loading="isLoading"
+            v-model:items-per-page="searchParams.size"
+            v-model:page="searchParams.page"
+            :items-length="productPage.totalElements"
             :items-per-page="searchParams.size"
-            :on-update:items-per-page="search"
-            :page="searchParams.page"
-            :on-update:page="search"
-            :search="searchParams.keyword"
-            :total-items="productPage.totalElements">
+            @update:itemsPerPage="search"
+            @update:page="search">
             <template v-slot:[`item.index`]="{index}">
                 <td>{{ index + 1 }}</td>
             </template>
@@ -120,6 +120,6 @@ export default defineComponent({
                     <v-icon @click="deleteProduct(item)">mdi-delete</v-icon>
                 </td>
             </template>
-        </v-data-table>
+        </v-data-table-server>
     </div>
 </template>

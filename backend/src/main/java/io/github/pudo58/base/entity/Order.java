@@ -30,6 +30,7 @@ public class Order extends BaseEntity {
     private User user;
 
     @ManyToOne
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Voucher voucher;
     private String address;
     private String phone;
@@ -40,6 +41,7 @@ public class Order extends BaseEntity {
     private Integer finalTotal; // tổng tiền cuối cùng
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private List<OrderDetail> orderDetails = new ArrayList<>();
 
 

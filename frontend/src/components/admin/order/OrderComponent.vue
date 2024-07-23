@@ -42,7 +42,7 @@ export default defineComponent({
                 size: 0,
             } as any,
             searchParams: {
-                page: 0,
+                page: 1,
                 size: 10,
                 startDate: '',
                 endDate: '',
@@ -125,18 +125,19 @@ export default defineComponent({
                 <v-row>
                     <v-col cols="12" class="mb-3">
                         <v-btn class="mx-2" @click="search" color="primary">Tìm kiếm</v-btn>
-                        <v-btn @click="searchParams = {page: 0, size: 10, startDate: '', endDate: ''}" color="secondary">Xóa bộ lọc</v-btn>
+                        <v-btn @click="searchParams = {page: 1, size: 10, startDate: '', endDate: ''}" color="secondary">Xóa bộ lọc</v-btn>
                     </v-col>
                 </v-row>
             </v-form>
-            <v-data-table
+            <v-data-table-server
                 :headers="headers"
                 :items="orderPage.content"
                 :loading="isLoading"
-                item-key="id"
+                v-model:items-per-page="searchParams.size"
+                v-model:page="searchParams.page"
+                :items-length="orderPage.totalElements"
                 :items-per-page="searchParams.size"
-                :show-current-page = "true"
-                :items-per-page-text="`Số dòng trên trang:`"
+                @update:itemsPerPage="search"
                 @update:page="search"
                 :on-update:items-per-page="search"
             >
@@ -165,7 +166,7 @@ export default defineComponent({
                     <v-icon @click="approve(item.id)" v-if="ORDER.STATUS_PENDING === item?.status">mdi-check</v-icon>
                     <v-icon @click="reject(item.id)" v-if="ORDER.STATUS_PENDING === item?.status">mdi-close</v-icon>
                     <v-icon @click="shipping(item.id)" v-if="ORDER.STATUS_PROCESSING === item?.status">mdi-truck</v-icon></template>
-            </v-data-table>
+            </v-data-table-server>
         </div>
     </div>
 </template>

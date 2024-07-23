@@ -31,7 +31,7 @@ export default defineComponent({
                 size: 0,
             } as any,
             searchParams: {
-                page: 0,
+                page: 1,
                 size: 10,
                 keyword: '',
             },
@@ -84,12 +84,12 @@ export default defineComponent({
             :headers="headers"
             :items="reviewPage.content"
             :loading="isLoading"
+            v-model:items-per-page="searchParams.size"
+            v-model:page="searchParams.page"
+            :items-length="reviewPage.totalElements"
             :items-per-page="searchParams.size"
-            :on-update:items-per-page="search"
-            :page="searchParams.page"
-            :on-update:page="search"
-            :search="searchParams.keyword"
-            :total-items="reviewPage.totalElements">
+            @update:itemsPerPage="search"
+            :search="searchParams.keyword">
             <template v-slot:[`item.index`]="{index}">
                 <td>{{ index + 1 }}</td>
             </template>

@@ -29,7 +29,7 @@ export default defineComponent({
                 size: 0,
             } as any,
             searchParams: {
-                page: 0,
+                page: 1,
                 size: 10,
                 keyword: '',
             },
@@ -78,16 +78,17 @@ export default defineComponent({
             single-line
         ></v-text-field>
         <v-btn color="primary" @click="() => router.push('/admin/color/new')">Thêm mới</v-btn>
-        <v-data-table
+        <v-data-table-server
             :headers="headers"
             :items="colorPage.content"
             :loading="isLoading"
+            v-model:items-per-page="searchParams.size"
+            v-model:page="searchParams.page"
+            :items-length="colorPage.totalElements"
             :items-per-page="searchParams.size"
-            :on-update:items-per-page="search"
-            :page="searchParams.page"
-            :on-update:page="search"
-            :search="searchParams.keyword"
-            :total-items="colorPage.totalElements">
+            @update:itemsPerPage="search"
+            @update:page="search"
+            :search="searchParams.keyword">
             <template v-slot:[`item.index`]="{index}">
                 <td>{{index + 1}}</td>
             </template>
@@ -97,7 +98,7 @@ export default defineComponent({
                     <v-icon left @click="deleteColor(item)">mdi-delete</v-icon>
                 </td>
             </template>
-        </v-data-table>
+        </v-data-table-server>
     </div>
 </template>
 <style scoped>

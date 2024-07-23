@@ -54,6 +54,24 @@ export class OrderService {
         return response.data;
     }
 
+    async findByUser(model: any) {
+        const response = await axios.post(`${this.url}/findByUser`, model, {
+            headers: {
+                Authorization: `${this.store?.getters.getToken}`
+            }
+        });
+        return response.data;
+    }
+
+    async receive(model: any) {
+        const response = await axios.post(`${this.url}/received`, model, {
+            headers: {
+                Authorization: `${this.store?.getters.getToken}`
+            }
+        });
+        return response.data;
+    }
+
     async getOrder(orderId: any) {
         const response = await axios.get(`${this.url}/get/${orderId}`, {
             headers: {
@@ -100,17 +118,8 @@ export class OrderService {
         return response.data;
     }
 
-    async findByUser(model: any) {
-        const response = await axios.post(`${this.url}/findByUser`, model, {
-            headers: {
-                Authorization: `${this.store?.getters.getToken}`
-            }
-        });
-        return response.data;
-    }
-
-    async receive(model: any) {
-        const response = await axios.post(`${this.url}/received`, model, {
+    async get(id: string) {
+        const response = await axios.get(`${this.adminUrl}/get/${id}`, {
             headers: {
                 Authorization: `${this.store?.getters.getToken}`
             }

@@ -95,7 +95,7 @@ export default defineComponent({
                         </div>
                         <div class="col-md-6">
                             <div class="left-content">
-                                <h4>Im pudo58</h4>
+                                <h4>Im Software Development</h4>
                                 <p>
                                     I'm pudo58. I have more than 2 years of experience working as a software engineer.
                                     I like to learn new technologies and apply them to my work. I am a hard-working
@@ -106,8 +106,7 @@ export default defineComponent({
                                 </p>
                                 <ul class="social-icons">
                                     <li>
-                                        <a target="_blank"
-                                           href="https://www.facebook.com/profile.php?id=100010911062900">
+                                        <a target="_blank">
                                             <i title="facebook link" class="fa fa-facebook"></i>
                                         </a>
                                     </li>

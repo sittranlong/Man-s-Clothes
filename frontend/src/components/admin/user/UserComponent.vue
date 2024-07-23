@@ -31,7 +31,7 @@ export default defineComponent({
                 size: 0,
             } as any,
             searchParams: {
-                page: 0,
+                page: 1,
                 size: 10,
                 keyword: '',
             },
@@ -83,14 +83,12 @@ export default defineComponent({
             :headers="headers"
             :items="userPage.content"
             :loading="isLoading"
+            v-model:items-per-page="searchParams.size"
+            v-model:page="searchParams.page"
+            :items-length="userPage.totalElements"
             :items-per-page="searchParams.size"
-            :total-items="userPage.totalElements"
-            :page="searchParams.page"
-            :on-update:page="search"
-            :on-update:items-per-page="search"
-            :search="searchParams.keyword"
-            @update:page="($event) => {searchParams.page = $event;search}"
-            @update:items-per-page="($event) => {searchParams.size = $event;search}">
+            @update:itemsPerPage="search"
+            :search="searchParams.keyword">
             <template v-slot:[`item.index`]="{index}">
                 {{ index + 1 }}
             </template>
@@ -103,7 +101,6 @@ export default defineComponent({
             <template v-slot:[`item.action`]="{item}">
                <td>
                    <v-icon left @click="viewDetail(item)">mdi-eye</v-icon>
-                   <v-icon left @click="deleteUser(item)">mdi-delete</v-icon>
                </td>
             </template>
         </v-data-table>

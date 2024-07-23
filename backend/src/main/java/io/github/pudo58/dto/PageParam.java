@@ -16,7 +16,7 @@ public class PageParam implements Serializable {
     }
 
     public void setPage(Integer page) {
-        this.page = page;
+        this.page = page - 1;
     }
 
     public Integer getSize() {
