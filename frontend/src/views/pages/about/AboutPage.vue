@@ -1,10 +1,97 @@
-<script lang="tsx">
-import {defineComponent} from "vue";
+<template>
+    <div>
+        <header-component/>
+        <div class="page-heading about-heading header-text">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="best-features about-features">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="section-heading">
+                            <h2>Our Background</h2>
+                        </div>
+                    </div>
+                    <div class="col-md-6 p-1">
+                        <div class="right-image">
+                            <img src="../../../assets/images/feature-image.jpg" alt=""/>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="left-content">
+                            <div v-html="pageConfig.value" :title="pageConfig.description"></div>
+                            <ul class="social-icons">
+                                <li>
+                                    <a target="_blank">
+                                        <i title="facebook link" class="fa fa-facebook"></i>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#">
+                                        <i title="twitter link" class="fa fa-twitter"></i>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a target="_blank" href="https://gitgub.com/pudo58">
+                                        <i title="github link" class="fa fa-github"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="team-members">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="section-heading">
+                            <h2>Member</h2>
+                        </div>
+                    </div>
+                    <div class="col-md-4" v-for="(item,index) in teamManagerList" :key="index">
+                        <div class="team-member">
+                            <div class="thumb-container">
+                                <img :src="item.image" alt=""/>
+                                <div class="hover-effect">
+                                    <div class="hover-content">
+                                        <ul class="social-icons">
+                                            <li><a :href="item.facebook"><i class="fa fa-facebook"></i></a></li>
+                                            <li><a href=""><i class="fa fa-twitter"></i></a></li>
+                                            <li><a :href="item.github"><i class="fa fa-github"></i></a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="down-content">
+                                <h4>{{ item.name }}</h4>
+                                <span>{{ item.role }}</span>
+                                <p class="limit-line-2">{{ item.description }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <our-customer-component/>
+        <footer-component/>
+        <loading-component v-if="loading"/>
+    </div>
+</template>
+<script lang="ts">
+import {defineComponent, inject} from "vue";
 import HeaderComponent from "@/components/header/HeaderComponent.vue";
 import {TeamManagerModel} from "@/base/model/team-manager.model";
 import FooterComponent from "@/components/footer/FooterComponent.vue";
 import OurCustomerComponent from "@/components/our-customer/OurCustomerComponent.vue";
 import LoadingComponent from "@/components/loading/LoadingComponent.vue";
+import {PageConfigService} from "@/base/service/page-config.service";
 
 export default defineComponent({
     name: 'AboutPage',
@@ -65,116 +152,35 @@ export default defineComponent({
                 description: 'Software Engineer',
             },
         ] as TeamManagerModel[];
-        const headerImage = (
-            <div class="page-heading about-heading header-text">
-                <div class="container">
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div class="text-content">
-                                <h4>about us</h4>
-                                <h2>our company</h2>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
-        const aboutFeature = (
-            <div class="best-features about-features">
-                <div class="container">
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div class="section-heading">
-                                <h2>Our Background</h2>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="right-image">
-                                <img src="../../../assets/images/feature-image.jpg" alt=""/>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="left-content">
-                                <h4>Im Software Development</h4>
-                                <p>
-                                    I'm pudo58. I have more than 2 years of experience working as a software engineer.
-                                    I like to learn new technologies and apply them to my work. I am a hard-working
-                                    person,
-                                    always trying to improve myself and learn new things. I am a team player and I like
-                                    to work in a
-                                    team.
-                                </p>
-                                <ul class="social-icons">
-                                    <li>
-                                        <a target="_blank">
-                                            <i title="facebook link" class="fa fa-facebook"></i>
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="#">
-                                            <i title="twitter link"  class="fa fa-twitter"></i>
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a target="_blank" href="https://gitgub.com/pudo58">
-                                            <i title="github link" class="fa fa-github"></i>
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
-        const teamMember = (
-            <div class="team-members">
-                <div class="container">
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div class="section-heading">
-                                <h2>Member</h2>
-                            </div>
-                        </div>
-                        {teamManagerList.map((item) => (
-                            <div class="col-md-4">
-                                <div class="team-member">
-                                    <div class="thumb-container">
-                                        <img src={item?.image} alt=""/>
-                                        <div class="hover-effect">
-                                            <div class="hover-content">
-                                                <ul class="social-icons">
-                                                    <li><a href={item?.facebook}><i class="fa fa-facebook"></i></a></li>
-                                                    <li><a href=""><i class="fa fa-twitter"></i></a></li>
-                                                    <li><a href={item?.github}><i class="fa fa-github"></i></a></li>
-                                                </ul>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="down-content">
-                                        <h4>{item.name}</h4>
-                                        <span>{item.role}</span>
-                                        <p class="limit-line-2">{item.description}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
-        );
-        const loadingComponent = <LoadingComponent loading={true}/>
-        return () => (
-            <div>
-                {loadingComponent}
-                <header-component/>
-                {headerImage}
-                {aboutFeature}
-                {teamMember}
-                <our-customer-component/>
-                <footer-component/>
-            </div>
-        )
+        return {
+            teamManagerList,
+            pageConfigService: inject('pageConfigService') as PageConfigService
+        }
+    },
+    data() {
+        return {
+            loading: false,
+            pageConfig : {
+                value : '',
+                description : ''
+            }
+        }
+    }, methods: {
+        async created() {
+            this.loading = true;
+            await this.pageConfigService.findByCode({
+                code: 'about_page'
+            }).then(res => {
+                this.pageConfig = res;
+            }).catch(err => {
+                console.log(err);
+            }).finally(() => {
+                this.loading = false;
+            });
+        }
+    },
+    created() {
+        this.created();
     }
 })
 </script>

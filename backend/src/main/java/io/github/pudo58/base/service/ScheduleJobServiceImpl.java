@@ -1,13 +1,17 @@
 package io.github.pudo58.base.service;
 
+import io.github.pudo58.base.entity.Order;
 import io.github.pudo58.base.entity.User;
+import io.github.pudo58.base.repo.OrderRepo;
 import io.github.pudo58.base.repo.UserRepo;
+import io.github.pudo58.constant.OrderConst;
 import io.github.pudo58.constant.UserConst;
 import io.github.pudo58.util.EmailSender;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -17,6 +21,7 @@ import java.util.List;
 public class ScheduleJobServiceImpl implements ScheduleJobService {
     private final UserRepo userRepo;
     private final EmailSender emailSender;
+    private final OrderRepo orderRepo;
 
     @Override
     public void sendEmailReminder() {
@@ -33,5 +38,19 @@ public class ScheduleJobServiceImpl implements ScheduleJobService {
                 e.printStackTrace();
             }
         });
+    }
+
+    @Override
+    @Transactional
+    public void changeStatusOrderDelivered() {
+        List<Order> orderList = orderRepo.findByStatus(OrderConst.STATUS_SHIPPING);
+        for (Order order : orderList) {
+            if (order.getDeliveryDate() != null && order.getExpectedDeliveryDate() != null) {
+                if (order.getDeliveryDate().after(order.getExpectedDeliveryDate())) {
+                    order.setStatus(OrderConst.STATUS_DELIVERED);
+                    orderRepo.save(order);
+                }
+            }
+        }
     }
 }

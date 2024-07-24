@@ -353,6 +353,8 @@ public class OrderServiceImpl implements OrderService {
             return ResponseEntity.notFound().build();
         }
         order.setStatus(OrderConst.STATUS_SHIPPING);
+        order.setDeliveryDate(new Date());
+        order.setExpectedDeliveryDate(model.getExpectedDate());
         orderRepo.save(order);
         return ResponseEntity.ok(new AlertResponseRecord(message.getMessage("order.do-shipping"), HttpStatus.OK.value()));
     }

@@ -228,6 +228,22 @@ const router = createRouter({
             }
         },
         {
+            path: '/admin/page-config',
+            component: () => import('@/views/pages/admin/page-config/PageConfigPage.vue'),
+            meta: {
+                requiresAuth: true,
+                isAdmin: true
+            }
+        },
+        {
+            path: '/admin/page-config/:id',
+            component: () => import('@/views/pages/admin/page-config/PageConfigDetailPage.vue'),
+            meta: {
+                requiresAuth: true,
+                isAdmin: true
+            }
+        },
+        {
             path: '/checkout',
             component: () => import('@/views/pages/checkout/CheckoutPage.vue'),
             meta: {

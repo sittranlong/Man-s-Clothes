@@ -11,6 +11,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -39,6 +40,8 @@ public class Order extends BaseEntity {
     private Integer discount; // giảm giá
     private Integer shippingFee; // phí vận chuyển
     private Integer finalTotal; // tổng tiền cuối cùng
+    private Date deliveryDate; // ngày giao hàng
+    private Date expectedDeliveryDate; // ngày nhận dự kiến
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})

@@ -11,6 +11,7 @@ import {OrderService} from "@/base/service/order.service";
 import {Voucher} from "@/base/model/voucher.model";
 import {VoucherService} from "@/base/service/voucher.service";
 import {ReviewService} from "@/base/service/review.service";
+import {PageConfigService} from "@/base/service/page-config.service";
 export const DependencyInjection = {
     install: (app: any,store : any) => {
         app.provide('productService', new ProductService(store))
@@ -25,5 +26,6 @@ export const DependencyInjection = {
         app.provide('orderService', new OrderService(store))
         app.provide('voucherService', new VoucherService(store))
         app.provide('reviewService', new ReviewService(store))
+        app.provide('pageConfigService', new PageConfigService(store))
     }
 };

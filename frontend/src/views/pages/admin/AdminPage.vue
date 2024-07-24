@@ -42,7 +42,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col py-3">
+            <div>
                 <slot></slot>
             </div>
         </div>
