@@ -17,7 +17,11 @@ public class ScheduleJobConfig {
         scheduleJobService.sendEmailReminder();
     }
 
-    // mỗi 1 phút
+    // mỗi 1 giây
+    @Scheduled(cron = "0 * * * * *") // mỗi 1 phút
+    public void changeStatusOrderReceived() {
+        scheduleJobService.changeStatusOrderReceived();
+    }
     @Scheduled(cron = "0 * * * * *") // mỗi 1 phút
     public void changeStatusOrderDelivered() {
         scheduleJobService.changeStatusOrderDelivered();

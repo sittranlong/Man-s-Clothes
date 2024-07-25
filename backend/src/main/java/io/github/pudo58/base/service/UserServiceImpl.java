@@ -126,6 +126,8 @@ public class UserServiceImpl extends AbstractService<User> implements UserServic
             // /^(03|07|08|09|01[2|6|8|9])+([0-9]{8})$/;
             if (!user.getPhone().matches("^(03|07|08|09|01[2|6|8|9])+([0-9]{8})$")) {
                 throw new IllegalArgumentException(message.getMessage("user.phone.invalid"));
+            } else {
+                oldUser.setPhone(user.getPhone());
             }
         }
         if (user.getAvatarBase64() != null) {

@@ -49,8 +49,12 @@ export default defineComponent({
             },
             isLoading: false,
             dialog: false,
-            desc : '',
-            orderCurrent: {} as Order
+            desc: '',
+            orderCurrent: {} as Order,
+            shippingOrderCurrent: {} as Order,
+            shippingDialog: false,
+            deliveredDate: '',
+            expectedDate: ''
         }
     },
     methods: {
@@ -81,7 +85,7 @@ export default defineComponent({
                 this.orderCurrent = order;
             }
         },
-        approvedQRCode(){
+        approvedQRCode() {
             this.orderService.approve({id: this.orderCurrent.id}).then(() => {
                 this.search();
                 toast.success('Xác nhận đơn hàng thành công');
@@ -103,15 +107,27 @@ export default defineComponent({
                 });
             }
         },
-        shipping(id: any) {
-            if (confirm('Bạn có chắc chắn muốn xác nhận đơn hàng này đã giao hàng ?')) {
-                this.orderService.shipping({id}).then(() => {
-                    this.search();
-                    toast.success('Xác nhận giao hàng thành công');
-                }).catch((error) => {
-                    toast.error(error.response.data.message);
-                });
-            }
+        shipping(order) {
+            this.shippingDialog = true;
+            this.shippingOrderCurrent = order;
+        },
+        doShipping() {
+            this.orderService.shipping(
+                {
+                    id: this.shippingOrderCurrent.id,
+                    expectedDate: this.expectedDate,
+                    deliveredDate: this.deliveredDate
+                }
+            ).then(() => {
+                this.search();
+                toast.success('Xác nhận giao cho đơn vị vận chuyển thành công');
+            }).catch((error) => {
+                toast.error(error.response.data.message);
+            }).finally(() => {
+                this.shippingDialog = false;
+                this.shippingOrderCurrent = {} as Order;
+                this.expectedDate = '';
+            });
         },
         OrderStatusText,
         formatMoney,
@@ -186,7 +202,7 @@ export default defineComponent({
                     <v-icon @click="viewDetail(item)">mdi-eye</v-icon>
                     <v-icon @click="approve(item)" v-if="ORDER.STATUS_PENDING === item?.status">mdi-check</v-icon>
                     <v-icon @click="reject(item.id)" v-if="ORDER.STATUS_PENDING === item?.status">mdi-close</v-icon>
-                    <v-icon @click="shipping(item.id)" v-if="ORDER.STATUS_PROCESSING === item?.status">mdi-truck
+                    <v-icon @click="shipping(item)" v-if="ORDER.STATUS_PROCESSING === item?.status">mdi-truck
                     </v-icon>
                 </template>
             </v-data-table-server>
@@ -201,17 +217,41 @@ export default defineComponent({
                 <v-card-text>
                     <div>
                         <p>
-                            Bạn đang xác nhận đơn hàng sử dụng phương thức <b class="text-danger">thanh toán chuyển khoản qua QRCode.</b>
+                            Bạn đang xác nhận đơn hàng sử dụng phương thức <b class="text-danger">thanh toán chuyển
+                            khoản qua QRCode.</b>
                         </p>
                         <v-text-field v-model="desc" label="Nội dung chuyển khoản" :readonly="true"></v-text-field>
                         <p>
-                            Bạn hãy kiểm tra xem có giao dịch chuyển khoản nào khớp với nội dung trên không, nếu có hãy xác nhận đơn hàng.
+                            Bạn hãy kiểm tra xem có giao dịch chuyển khoản nào khớp với nội dung trên không, nếu có hãy
+                            xác nhận đơn hàng.
                         </p>
                     </div>
                 </v-card-text>
                 <v-card-actions>
                     <v-btn color="primary" @click="dialog = false">Hủy</v-btn>
                     <v-btn color="primary" @click="approvedQRCode()">Xác nhận</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+        <v-dialog v-model="shippingDialog" max-width="800px">
+            <v-card>
+                <v-card-title>
+                    <h3>Xác nhận giao cho đơn vị vận chuyển</h3>
+                </v-card-title>
+                <v-card-text>
+                    <div>
+                        <p>
+                            Bạn đang xác nhận giao hàng cho đơn vị vận chuyển.
+                        </p>
+                        <v-text-field v-model="deliveredDate" label="Ngày giao hàng"
+                                      type="datetime-local"></v-text-field>
+                        <v-text-field v-model="expectedDate" label="Ngày dự kiến nhận hàng"
+                                      type="datetime-local"></v-text-field>
+                    </div>
+                </v-card-text>
+                <v-card-actions>
+                    <v-btn color="primary" @click="shippingDialog = false">Hủy</v-btn>
+                    <v-btn color="primary" @click="doShipping()">Xác nhận</v-btn>
                 </v-card-actions>
             </v-card>
         </v-dialog>

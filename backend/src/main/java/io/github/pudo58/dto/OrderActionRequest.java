@@ -12,4 +12,5 @@ public class OrderActionRequest {
     private UUID id;
     private String reason;
     private Date expectedDate;
+    private Date deliveredDate;
 }

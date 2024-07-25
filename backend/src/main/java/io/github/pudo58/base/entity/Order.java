@@ -1,5 +1,6 @@
 package io.github.pudo58.base.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
@@ -10,6 +11,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -41,7 +43,9 @@ public class Order extends BaseEntity {
     private Integer discount; // giảm giá
     private Integer shippingFee; // phí vận chuyển
     private Integer finalTotal; // tổng tiền cuối cùng
+    @Temporal(TemporalType.TIMESTAMP)
     private Date deliveryDate; // ngày giao hàng
+    @Temporal(TemporalType.TIMESTAMP)
     private Date expectedDeliveryDate; // ngày nhận dự kiến
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.EAGER)

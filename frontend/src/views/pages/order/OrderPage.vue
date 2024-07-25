@@ -33,10 +33,9 @@
 					<span class="badge"
                           :class="[
                               {'bg-warning': item.status === Order.STATUS_PENDING}
-                              ,{'bg-success': item.status === Order.STATUS_PROCESSING
+                              ,{'bg-success': item.status === Order.STATUS_PROCESSING || item.status === Order.STATUS_RECEIVED
                               || item.status === Order.STATUS_SHIPPING
-                              || item.status === Order.STATUS_COMPLETED},{'bg-danger': item.status === Order.STATUS_CANCELLED},
-					 {'bg-danger' : item.status === Order.STATUS_REFUNDED }]">
+                              || item.status === Order.STATUS_COMPLETED},{'bg-danger': item.status === Order.STATUS_CANCELLED},{'bg-danger' : item.status === Order.STATUS_REFUNDED }]">
 						{{ OrderStatusText(item.status) }}
 					</span>
                     </td>
@@ -49,7 +48,7 @@
                                 @click.prevent="cancel(item.id)">
                             <i class="bi bi-archive-fill"></i>
                         </button>
-                        <button v-if="item.status === Order.STATUS_SHIPPING" title="Đã nhận được hàng" class="btn btn-warning"
+                        <button v-if="item.status === Order.STATUS_RECEIVED" title="Đã nhận được hàng" class="btn btn-warning"
                                 @click.prevent="receivedOrder(item.id)">
                             <i class="bi bi-bag-check"></i>
                         </button>

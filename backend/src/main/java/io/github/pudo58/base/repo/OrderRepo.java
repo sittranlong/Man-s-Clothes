@@ -29,4 +29,7 @@ public interface OrderRepo extends JpaRepository<Order, UUID> {
     Page<Order> findByUserId(UUID userId, Pageable pageable);
 
     List<Order> findByStatus(String status);
+
+    @Query("select o from Order o where o.status = :status and o.expectedDeliveryDate < current_timestamp")
+    List<Order> findByStatusCustom(String status);
 }

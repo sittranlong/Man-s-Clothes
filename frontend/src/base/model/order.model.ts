@@ -9,6 +9,7 @@ export class Order {
     public static readonly STATUS_CANCELLED = "CANCELLED";
     public static readonly STATUS_REFUNDED = "REFUNDED";
     public static readonly STATUS_SHIPPING = "SHIPPING";
+    public static readonly STATUS_RECEIVED = "RECEIVED";
     id?: string;
     createDate?: number;
     code?: string;
@@ -19,6 +20,8 @@ export class Order {
     voucher?: Voucher;
     address: string;
     phone: string;
+    deliveryDate?: number;
+    expectedDeliveryDate?: number;
     note?: string;
     paymentMethod: number
     discount?: number;
@@ -56,7 +59,8 @@ export const OrderStatus = [
     {value: Order.STATUS_COMPLETED, text: 'Hoàn thành'},
     {value: Order.STATUS_CANCELLED, text: 'Đã hủy'},
     {value: Order.STATUS_REFUNDED, text: 'Đã hoàn tiền'},
-    {value: Order.STATUS_SHIPPING, text: 'Đang giao hàng'},
+    {value: Order.STATUS_SHIPPING, text: 'Đang giao cho ĐVVC'},
+    {value: Order.STATUS_RECEIVED, text: 'Đã giao xong'},
 ];
 
 export const PaymentMethod = {

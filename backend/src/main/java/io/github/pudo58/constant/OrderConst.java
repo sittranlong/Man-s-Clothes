@@ -9,6 +9,6 @@ public class OrderConst {
     public static final String STATUS_REJECTED = "REJECTED"; // đã từ chối
     public static final String STATUS_SHIPPING = "SHIPPING"; // đang giao hàng
 
-    // đã giao đến nơi
-    public static final String STATUS_DELIVERED = "DELIVERED"; // đã giao đến nơi
+    // đã nhận hàng
+    public static final String STATUS_RECEIVED = "RECEIVED"; // đã nhận hàng
 }

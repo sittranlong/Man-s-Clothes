@@ -30,7 +30,6 @@ import org.springframework.util.Assert;
 
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
@@ -349,8 +348,15 @@ public class OrderServiceImpl implements OrderService {
             return ResponseEntity.notFound().build();
         }
         order.setStatus(OrderConst.STATUS_SHIPPING);
-        order.setDeliveryDate(new Date());
-        order.setExpectedDeliveryDate(model.getExpectedDate());
+        // trừ 7 tiếng để đổi về múi giờ UTC
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(model.getDeliveredDate());
+        calendar.add(Calendar.HOUR, -7);
+        order.setDeliveryDate(calendar.getTime());
+        Calendar calendar1 = Calendar.getInstance();
+        calendar1.setTime(model.getExpectedDate());
+        calendar1.add(Calendar.HOUR, -7);
+        order.setExpectedDeliveryDate(calendar1.getTime());
         orderRepo.save(order);
         return ResponseEntity.ok(new AlertResponseRecord(message.getMessage("order.do-shipping"), HttpStatus.OK.value()));
     }
@@ -358,7 +364,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional(rollbackFor = IllegalArgumentException.class)
     public ResponseEntity<?> receivedOrder(OrderActionRequest model) {
-        Order order = orderRepo.getByIdAndStatusIn(model.getId(), List.of(OrderConst.STATUS_SHIPPING));
+        Order order = orderRepo.getByIdAndStatusIn(model.getId(), List.of(OrderConst.STATUS_RECEIVED));
         if (order == null) {
             return ResponseEntity.notFound().build();
         }

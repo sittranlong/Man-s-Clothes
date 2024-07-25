@@ -13,6 +13,7 @@ import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -42,14 +43,23 @@ public class ScheduleJobServiceImpl implements ScheduleJobService {
 
     @Override
     @Transactional
-    public void changeStatusOrderDelivered() {
-        List<Order> orderList = orderRepo.findByStatus(OrderConst.STATUS_SHIPPING);
+    public void changeStatusOrderReceived() {
+        List<Order> orderList = orderRepo.findByStatusCustom(OrderConst.STATUS_SHIPPING);
         for (Order order : orderList) {
-            if (order.getDeliveryDate() != null && order.getExpectedDeliveryDate() != null) {
-                if (order.getDeliveryDate().after(order.getExpectedDeliveryDate())) {
-                    order.setStatus(OrderConst.STATUS_DELIVERED);
-                    orderRepo.save(order);
-                }
+            order.setStatus(OrderConst.STATUS_RECEIVED);
+            orderRepo.save(order);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void changeStatusOrderDelivered() {
+        List<Order> orderList = orderRepo.findByStatus(OrderConst.STATUS_RECEIVED);
+        for (Order order : orderList) {
+            // nếu ngày nhận hàng + 3 ngày < ngày hiện tại
+            if (order.getDeliveryDate().toInstant().plusSeconds(3 * 24 * 60 * 60).toEpochMilli() < System.currentTimeMillis()) {
+                order.setStatus(OrderConst.STATUS_COMPLETED);
+                orderRepo.save(order);
             }
         }
     }

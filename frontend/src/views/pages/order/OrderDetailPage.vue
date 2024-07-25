@@ -24,6 +24,12 @@
                                 <p><b>Ngày đặt hàng:</b> {{ formatDate(order?.createDate) }}</p>
                             </div>
                             <div class="col-md-6">
+                                <p><b>Ngày giao hàng:</b> {{ formatDateWithPattern(order?.deliveryDate) }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><b>Ngày nhận hàng dự kiến:</b> {{ formatDateWithPattern(order?.expectedDeliveryDate) }}</p>
+                            </div>
+                            <div class="col-md-6">
                                 <p><b>Trạng thái:</b> <span class="badge"
                                                             :class="[
                               {'bg-warning': order?.status === Order.STATUS_PENDING}
@@ -92,6 +98,7 @@ import {useRoute, useRouter} from "vue-router";
 import HeaderComponent from "@/components/header/HeaderComponent.vue";
 import FooterComponent from "@/components/footer/FooterComponent.vue";
 import formatMoney, {formatDate} from "@/plugins/utils";
+import { format } from 'date-fns';
 
 export default defineComponent({
     name: "OrderDetailComponent",
@@ -121,7 +128,11 @@ export default defineComponent({
             })
         },
         formatMoney,
-        formatDate
+        formatDate,
+        formatDateWithPattern(date : number){
+            let pattern = 'dd/MM/yyyy HH:mm:ss';
+            return format(new Date(date), pattern);
+        }
     },
     created() {
         this.initOrder();
