@@ -53,7 +53,7 @@ export class MetaConfig {
 }
 
 export class ProductDetail {
-    id?: number;
+    id?: string;
     size?: Size = new Size();
     color?: Color = new Color();
     product?: Product = new Product();

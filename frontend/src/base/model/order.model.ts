@@ -14,6 +14,7 @@ export class Order {
     code?: string;
     total: number;
     status?: string;
+    qrCodeDesc?: string;
     user: User;
     voucher?: Voucher;
     address: string;

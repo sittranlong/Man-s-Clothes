@@ -59,7 +59,7 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>SDT</label>
-                                        <input type="text" class="form-control" :value="user.phone">
+                                        <input type="text" class="form-control" v-model="user.phone">
                                     </div>
                                 </div>
                                 <div class="col-md-6">

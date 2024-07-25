@@ -29,5 +29,20 @@ public class ProductDetail extends BaseEntity {
     private UUID colorId;
     @Transient
     private String imageBase64;
+    private Boolean isDeleted;
 
+    @Override
+    public void preUpdate() {
+        synchronized (this) {
+            if (quantity == null) {
+                quantity = 0;
+            }
+            if (isDeleted == null) {
+                isDeleted = false;
+            }
+            if (quantity < 0) {
+                quantity = 0;
+            }
+        }
+    }
 }

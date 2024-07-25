@@ -10,11 +10,15 @@ import io.github.pudo58.constant.ProductConst;
 import io.github.pudo58.dto.ProductCard;
 import io.github.pudo58.dto.ProductSearchRequest;
 import io.github.pudo58.util.ImageBase64;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -23,12 +27,15 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class ProductServiceImpl extends AbstractService<Product> implements ProductService {
     private final ProductRepo productRepo;
     private final BrandRepo brandRepo;
     private final CategoryRepo categoryRepo;
     private final SizeRepo sizeRepo;
     private final ColorRepo colorRepo;
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @Override
     public Product save(Product product) {
@@ -39,7 +46,9 @@ public class ProductServiceImpl extends AbstractService<Product> implements Prod
     @Override
     public Product findById(UUID uuid) {
         Product product = super.findById(uuid);
-        product.setProductDetails(product.getProductDetails().stream().sorted(Comparator.comparing(ProductDetail::getCreateDate)).toList());
+        product.setProductDetails(product.getProductDetails().stream().filter(
+                productDetail -> !Boolean.TRUE.equals(productDetail.getIsDeleted())
+        ).sorted(Comparator.comparing(ProductDetail::getCreateDate)).toList());
         if (product.getBrand() != null) {
             product.setBrandId(product.getBrand().getId());
         }
@@ -107,6 +116,13 @@ public class ProductServiceImpl extends AbstractService<Product> implements Prod
             productCardList.add(ProductCard.fromProduct(product));
         }
         return productPage.map(product -> productCardList.get(productList.indexOf(product)));
+    }
+
+    @Override
+    public void deleteDetail(UUID productDetailId) {
+        Query query = entityManager.createQuery("UPDATE ProductDetail pd SET pd.isDeleted = true WHERE pd.id = :productDetailId");
+        query.setParameter("productDetailId", productDetailId);
+        query.executeUpdate();
     }
 
     private void addDetail(Product product) {

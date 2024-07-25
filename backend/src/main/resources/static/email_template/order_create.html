@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xác nhận Đơn hàng</title>
+    <style>
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            width: 80%;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            padding: 10px 0;
+            background-color: #4CAF50;
+            color: white;
+        }
+        .order-details {
+            margin: 20px 0;
+        }
+        .order-details table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .order-details th, .order-details td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        .order-details th {
+            background-color: #f2f2f2;
+        }
+        .footer {
+            text-align: center;
+            padding: 10px 0;
+            background-color: #4CAF50;
+            color: white;
+            margin-top: 20px;
+        }
+        .contact-info {
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>Đặt hàng thành công</h1>
+    </div>
+    <p>Xin chào {{fullName}},</p>
+    <p>Cảm ơn bạn đã đặt hàng tại cửa hàng của chúng tôi. Đơn hàng của bạn đã được xác nhận và đang được xử lý. Bạn sẽ nhận được thông báo qua email khi đơn hàng của bạn được gửi đi.</p>
+    <div class="order-details">
+        <h2>Chi tiết đơn hàng</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>Sản phẩm</th>
+                <th>Số lượng</th>
+                <th>Giá</th>
+                <th>Tổng</th>
+            </tr>
+            </thead>
+            <tbody>
+            {{orderDetails}}
+            </tbody>
+            <tfoot>
+            <tr>
+                <th colspan="3">Tổng cộng</th>
+                <th>{{finalTotal}}</th>
+            </tr>
+            </tfoot>
+        </table>
+    </div>
+    <div class="contact-info">
+        <p>Nếu bạn có bất kỳ câu hỏi nào, xin vui lòng liên hệ với chúng tôi qua email <a href="mailto:contact@manclothes.com">contact@manclothes.com</a> hoặc gọi số điện thoại (123) 456-7890.</p>
+    </div>
+    <div class="footer">
+        <p>&copy; 2024 Man Clothes Shop. Tất cả các quyền được bảo lưu.</p>
+    </div>
+</div>
+</body>
+</html>

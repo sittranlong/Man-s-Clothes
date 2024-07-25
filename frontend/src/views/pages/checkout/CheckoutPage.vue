@@ -57,8 +57,10 @@
                     <v-card-text>
                         <v-radio-group v-model="orderRequest.paymentMethod" label="Hình thức thanh toán">
                             <div v-if="isAdmin">
-                                <v-radio v-for="method in [PAYMENT_METHOD.QRCODE,PAYMENT_METHOD.COD, PAYMENT_METHOD.METHOD_AT_COUNTER]" :key="method"
-                                         :label="method.text" :value="method.value">
+                                <v-radio
+                                    v-for="method in [PAYMENT_METHOD.QRCODE,PAYMENT_METHOD.COD, PAYMENT_METHOD.METHOD_AT_COUNTER]"
+                                    :key="method"
+                                    :label="method.text" :value="method.value">
                                 </v-radio>
                             </div>
                             <div v-else>
@@ -98,8 +100,10 @@
                         <v-divider></v-divider>
                         <v-radio-group v-model="orderRequest.paymentMethod" label="Hình thức thanh toán">
                             <div v-if="isAdmin">
-                                <v-radio v-for="method in [PAYMENT_METHOD.QRCODE,PAYMENT_METHOD.COD, PAYMENT_METHOD.METHOD_AT_COUNTER]" :key="method"
-                                         :label="method.text" :value="method.value">
+                                <v-radio
+                                    v-for="method in [PAYMENT_METHOD.QRCODE,PAYMENT_METHOD.COD, PAYMENT_METHOD.METHOD_AT_COUNTER]"
+                                    :key="method"
+                                    :label="method.text" :value="method.value">
                                 </v-radio>
                             </div>
                             <div v-else>
@@ -145,16 +149,36 @@
                                 <td colspan="3">Thành tiền (4 = 1 + 2 - 3)</td>
                                 <td class="font-weight-bold">{{ formatMoney(orderInfo?.finalTotal) }}</td>
                             </tr>
-                            <tr>
-                                <td colspan="4" v-if="orderRequest.paymentMethod !== PAYMENT_METHOD.COD.value">
-                                    <v-img :src="orderInfo?.qrCode?.data?.qrDataURL" alt="QR Code" width="250"
-                                           height="250"></v-img>
-                                </td>
-                            </tr>
                             </tbody>
                         </table>
                         <v-divider></v-divider>
-                        <v-btn type="submit" @click.prevent="createOrder">Xác nhận thanh toán</v-btn>
+                        <v-btn type="submit" @click.prevent="createOrder"
+                               :text="orderRequest.paymentMethod === PAYMENT_METHOD.COD.value ? 'Đặt hàng' : 'Quét QR Code'"></v-btn>
+                        <v-dialog v-model="isShowQRCode" max-width="800px">
+                            <v-card>
+                                <v-card-title>
+                                    <h3>Lưu ý</h3>
+                                </v-card-title>
+                                <v-card-text>
+                                    <div>
+                                        <p>
+                                            Bạn đang xác nhận đơn hàng sử dụng phương thức <b class="text-danger">thanh
+                                            toán chuyển khoản qua QRCode.</b>
+                                            <br>
+                                            Vui lòng quét mã QRCode để thanh toán.
+                                        </p>
+                                    </div>
+                                    <v-img v-if="qrCode && qrCode.length > 0" :src="qrCode" alt="QR Code" width="250"
+                                           height="250"></v-img>
+                                    <div v-else>
+                                        <p>Đang tải mã QR...</p>
+                                    </div>
+                                </v-card-text>
+                                <v-card-actions>
+                                    <v-btn @click="isShowQRCode = false" color="primary">Xong</v-btn>
+                                </v-card-actions>
+                            </v-card>
+                        </v-dialog>
                     </v-card-text>
                 </v-card>
             </div>
@@ -230,7 +254,8 @@ export default defineComponent({
             isShowQRCode: false,
             activeStep: 1,
             PAYMENT_METHOD: PaymentMethod,
-            isAdmin: false
+            isAdmin: false,
+            submitCount: 0,
         }
     },
     methods: {
@@ -262,16 +287,30 @@ export default defineComponent({
                 toast.error('Vui lòng chọn hình thức thanh toán');
                 return;
             }
-            if (this.orderRequest.paymentMethod === PaymentMethod.QRCODE.value) {
+            if (this.submitCount > 0 && this.orderRequest.paymentMethod === PaymentMethod.QRCODE.value) {
                 this.isShowQRCode = true;
+                return;
+            } else {
+                if (this.orderRequest.paymentMethod === PaymentMethod.QRCODE.value) {
+                    this.isShowQRCode = true;
+                    this.orderService.createOrder(this.orderRequest).then((res) => {
+                        this.orderInfo = res;
+                        this.qrCode = res?.qrCode?.data?.qrDataURL;
+                    }, (error) => {
+                        toast.error(error.response.data.message);
+                    });
+                } else {
+                    this.orderService.createOrder(this.orderRequest).then((res) => {
+                        localStorage.setItem('orderId', res.order?.id);
+                        toast.success('Đặt hàng thành công');
+                        this.router.push('/order');
+                    }, (error) => {
+                        toast.error(error.response.data.message);
+                    });
+                }
             }
-            this.orderService.createOrder(this.orderRequest).then((res) => {
-                localStorage.setItem('orderId', res.order?.id);
-                toast.success('Đặt hàng thành công');
-                this.router.push('/order');
-            }, (error) => {
-                toast.error(error.response.data.message);
-            });
+            this.submitCount++;
+
         },
         getOrderInfo() {
             console.log(this.orderRequest)

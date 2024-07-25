@@ -39,6 +39,7 @@ import java.net.http.HttpResponse;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 @Service
@@ -50,6 +51,7 @@ public class OrderServiceImpl implements OrderService {
     private final Message message;
     private final RedisTemplate<String, Object> redisTemplate;
     private final EmailSender emailSender;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Value("${vietqr.url}")
     private String vietQRURL;
@@ -135,6 +137,17 @@ public class OrderServiceImpl implements OrderService {
                 order.setDiscount(0);
             }
             Order orderSaved = this.orderRepo.save(order);
+            ExecutorService executor = Executors.newSingleThreadExecutor();
+            if (PaymentConst.METHOD_QR_CODE.equals(model.getPaymentMethod())) {
+                orderSaved.setQrCodeDesc(User.getContext().getUsername() + " " + orderSaved.getCode() + " Thanh toan don hang gia tri " + orderSaved.getFinalTotal() + " VND");
+                executor.execute(() -> {
+                    try {
+                        emailSender.sendOrderCreate(orderSaved);
+                    } catch (IOException | MessagingException e) {
+                        e.printStackTrace();
+                    }
+                });
+            }
             orderDetailList.forEach(orderDetail -> orderDetail.setOrder(orderSaved));
             orderSaved.setOrderDetails(orderDetailList);
             ResponseEntity<?> qrCode = this.getQrCode(orderSaved.getId());
@@ -143,7 +156,7 @@ public class OrderServiceImpl implements OrderService {
                     "shippingFee", shippingFee,
                     "finalTotal", order.getFinalTotal(),
                     "cartList", cartList,
-                    "qrCode", Objects.nonNull(qrCode.getBody())
+                    "qrCode", objectMapper.readValue(qrCode.getBody().toString(), Map.class)
             );
             return ResponseEntity.ok(response);
         }
@@ -193,29 +206,12 @@ public class OrderServiceImpl implements OrderService {
                     return ResponseEntity.badRequest().body(new AlertResponseRecord(message.getMessage("voucher.invalid"), HttpStatus.BAD_REQUEST.value()));
                 }
             }
-            final String jsonPayload = "{\n" +
-                    "  \"accountNo\": \"0968242106\",\n" +
-                    "  \"accountName\": \"TRAN HOANG LONG\",\n" +
-                    "  \"acqId\": 970422,\n" +
-                    "  \"amount\": " + finalTotal + ",\n" +
-                    "  \"addInfo\": \"" + User.getContext().getUsername() + "-" + model.getName() + "- Thanh toan don hang gia tri " + finalTotal + " VND\",\n" +
-                    "  \"format\": \"text\",\n" +
-                    "  \"template\": \"compact2\"\n" +
-                    "}";
-            HttpURLConnection connection = (HttpURLConnection) new URI(vietQRURL).toURL().openConnection();
-            connection.setRequestMethod("POST");
-            connection.setRequestProperty("Content-Type", "application/json");
-            connection.setDoOutput(true);
-            connection.getOutputStream().write(jsonPayload.getBytes());
-            ObjectMapper objectMapper = new ObjectMapper();
-            Map<?, ?> qrCodeResponse = objectMapper.readValue(connection.getInputStream(), Map.class);
             Map<String, Object> response = Map.of(
                     "total", total,
                     "shippingFee", shippingFee,
                     "finalTotal", finalTotal,
                     "cartList", cartList,
-                    "voucherDiscount", voucherDiscount,
-                    "qrCode", qrCodeResponse
+                    "voucherDiscount", voucherDiscount
             );
             return ResponseEntity.ok(response);
         }
@@ -233,7 +229,7 @@ public class OrderServiceImpl implements OrderService {
                 "  \"accountName\": \"TRAN HOANG LONG\",\n" +
                 "  \"acqId\": 970422,\n" +
                 "  \"amount\": " + order.getFinalTotal() + ",\n" +
-                "  \"addInfo\": \"" + User.getContext().getUsername() + "-" + order.getName() + "- Thanh toan don hang gia tri " + order.getFinalTotal() + " VND\",\n" +
+                "  \"addInfo\": \"" + User.getContext().getUsername() + " " + order.getCode() + " Thanh toan don hang gia tri " + order.getFinalTotal() + " VND\",\n" +
                 "  \"format\": \"text\",\n" +
                 "  \"template\": \"compact2\"\n" +
                 "}";

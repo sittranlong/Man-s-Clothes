@@ -28,17 +28,19 @@ public class Product extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, targetEntity = Category.class)
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Category category;
-
-    @ManyToOne(cascade = CascadeType.ALL, targetEntity = Brand.class)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, targetEntity = Brand.class)
     private Brand brand;
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL, targetEntity = MetaConfig.class)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private MetaConfig metaConfig;
 
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REMOVE})
     private List<ProductDetail> productDetails = new ArrayList<>();
 
-    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REMOVE})
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
+    @JsonIgnoreProperties({"product"})
     private List<Review> reviews = new ArrayList<>();
 
     // request insert

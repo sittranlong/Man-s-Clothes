@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-@Transactional(readOnly = true)
+@Transactional
 public abstract class AbstractService<T> implements io.github.pudo58.base.service.core.Service<T> {
     @Autowired
     @SuppressWarnings("all")

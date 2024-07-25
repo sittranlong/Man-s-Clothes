@@ -32,6 +32,15 @@ export class ProductService {
         return response.data;
     }
 
+    public async deleteDetail(id: string) {
+        const response = await axios.post(`${this.adminUrl}/deleteDetail/${id}`, {} ,{
+            headers: {
+                Authorization: `${this.store?.getters.getToken}`
+            }
+        });
+        return response.data;
+    }
+
     public async get(id: string) {
         const response = await axios.get(`${this.url}/get/${id}` );
         return response.data;

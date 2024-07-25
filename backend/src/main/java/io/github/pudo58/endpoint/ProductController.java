@@ -6,10 +6,9 @@ import io.github.pudo58.base.service.ProductService;
 import io.github.pudo58.dto.ProductSearchRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/product")
@@ -20,5 +19,10 @@ public class ProductController extends AbstractController<Product> {
     @PostMapping("/findBySearch")
     public Page<Product> findBySearch(@RequestBody ProductSearchRequest model) {
         return productService.findBySearch(model);
+    }
+
+    @PostMapping("/deleteDetail/{productDetailId}")
+    public void deleteDetail(@PathVariable UUID productDetailId) {
+        productService.deleteDetail(productDetailId);
     }
 }

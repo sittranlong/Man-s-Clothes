@@ -28,6 +28,8 @@ public class EmailSender {
 
     @Value("classpath:static/email_template/order_alert.html")
     private Resource orderTemplate;
+    @Value("classpath:static/email_template/order_create.html")
+    private Resource orderCreateTemplate;
     private final long expiryTime;
     private final String frontEndUrl;
 
@@ -77,6 +79,14 @@ public class EmailSender {
                     .append("<td>").append(detail.getTotal()).append("</td>")
                     .append("</tr>");
         }
+        orderDetails.append("<tr>")
+                .append("<td colspan='3'>Phí vận chuyển</td>")
+                .append("<td>").append(order.getShippingFee()).append("</td>")
+                .append("</tr>");
+        orderDetails.append("<tr>")
+                .append("<td colspan='3'>Giảm giá</td>")
+                .append("<td>").append(order.getDiscount()).append("</td>")
+                .append("</tr>");
         content = content.replace("{{orderDetails}}", orderDetails.toString());
         content = content.replace("{{finalTotal}}", String.valueOf(order.getFinalTotal()));
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
@@ -87,5 +97,36 @@ public class EmailSender {
         javaMailSender.send(helper.getMimeMessage());
     }
 
+    public void sendOrderCreate(Order order) throws IOException, MessagingException {
+        File file = orderCreateTemplate.getFile();
+        String content = Files.readString(file.toPath());
+        content = content.replace("{{fullName}}", order.getUser().getFullName());
+        StringBuilder orderDetails = new StringBuilder();
+        for (OrderDetail detail : order.getOrderDetails()) {
+            orderDetails.append("<tr>")
+                    .append("<td>").append(detail.getProductDetail().getProduct().getName()).append("</td>")
+                    .append("<td>").append(detail.getQuantity()).append("</td>")
+                    .append("<td>").append(detail.getPrice()).append("</td>")
+                    .append("<td>").append(detail.getTotal()).append("</td>")
+                    .append("</tr>");
+        }
+        orderDetails.append("<tr>")
+                .append("<td colspan='3'>Phí vận chuyển</td>")
+                .append("<td>").append(order.getShippingFee()).append("</td>")
+                .append("</tr>");
+        orderDetails.append("<tr>")
+                .append("<td colspan='3'>Giảm giá</td>")
+                .append("<td>").append(order.getDiscount()).append("</td>")
+                .append("</tr>");
+        content = content.replace("{{orderDetails}}", orderDetails.toString());
+
+        content = content.replace("{{finalTotal}}", String.valueOf(order.getFinalTotal()));
+        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, StandardCharsets.UTF_8.name());
+        helper.setTo(order.getUser().getEmail());
+        helper.setSubject("Xác nhận Đơn hàng");
+        helper.setText(content, true);
+        javaMailSender.send(helper.getMimeMessage());
+    }
 
 }

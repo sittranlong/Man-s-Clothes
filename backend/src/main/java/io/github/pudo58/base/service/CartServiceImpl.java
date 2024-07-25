@@ -43,6 +43,9 @@ public class CartServiceImpl implements CartService {
             cart.setQuantity(cart.getQuantity() + model.getQuantity());
             cart.setPrice(cart.getPrice() + (productDetail.getProduct().getPrice() * model.getQuantity()));
         }
+        if (cart.getQuantity() > productDetail.getQuantity()) {
+            return ResponseEntity.badRequest().body(this.message.getMessage("quantity.not-enough"));
+        }
         this.cartRepo.save(cart);
         return ResponseEntity.ok().body(this.message.getMessage("cart.added"));
     }

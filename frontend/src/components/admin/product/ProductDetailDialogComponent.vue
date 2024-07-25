@@ -71,6 +71,16 @@ export default defineComponent({
                     this.files = [];
                 }
             }
+        }, removeDetail(index: number) {
+            const detail = this.productDetails[index];
+            if (detail.id) {
+                this.productService.deleteDetail(detail.id).then(() => {
+                    this.productDetails.splice(index, 1);
+                    toast.success('Xóa thành công');
+                });
+            } else {
+                this.productDetails.splice(index, 1);
+            }
         }
     },
     created() {
@@ -136,6 +146,11 @@ export default defineComponent({
                                 width="100"
                                 height="100"
                             ></v-img>
+                        </v-col>
+                    </v-row>
+                    <v-row>
+                        <v-col cols="12" sm="6" md="4">
+                            <v-btn color="red" @click="removeDetail(index)">Xóa</v-btn>
                         </v-col>
                     </v-row>
                 </v-container>

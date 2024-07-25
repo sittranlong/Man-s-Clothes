@@ -36,6 +36,7 @@ public class Order extends BaseEntity {
     private String address;
     private String phone;
     private String note;
+    private String qrCodeDesc;
     private Integer paymentMethod; // 1: COD, 2: QR code
     private Integer discount; // giảm giá
     private Integer shippingFee; // phí vận chuyển

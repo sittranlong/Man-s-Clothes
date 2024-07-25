@@ -25,6 +25,7 @@ public class Review extends BaseEntity {
 
     @ManyToOne
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    @JsonIgnore
     private User user;
     @ManyToOne
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
